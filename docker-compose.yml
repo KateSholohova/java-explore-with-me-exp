@@ -49,7 +49,7 @@ services:
     image: postgres:16.1
     container_name: postgres-main
     ports:
-      - "6541:5432"
+      - "5632:5432"
     environment:
       - POSTGRES_PASSWORD=1
       - POSTGRES_USER=postgres
