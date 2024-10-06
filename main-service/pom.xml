@@ -127,6 +127,8 @@
                 </executions>
                 <configuration>
                     <outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
+                    <!-- Указание процессора аннотаций -->
+                    <processor>com.querydsl.apt.jpa.JPAAnnotationProcessor</processor>
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -141,6 +143,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
@@ -156,5 +159,6 @@
 
         </plugins>
     </build>
+
 
 </project>
