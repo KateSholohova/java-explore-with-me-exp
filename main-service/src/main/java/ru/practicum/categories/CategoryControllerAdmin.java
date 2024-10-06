@@ -14,7 +14,7 @@ public class CategoryControllerAdmin {
     private final CategoryService categoryService;
 
     @PostMapping
-    public CategoryDto create(@RequestBody @Valid CategoryDto categoryDto ) {
+    public CategoryDto create(@RequestBody @Valid CategoryDto categoryDto) {
         return categoryService.create(categoryDto);
     }
 
@@ -28,8 +28,6 @@ public class CategoryControllerAdmin {
     public void delete(@PathVariable("categoryId") int categoryId) {
         categoryService.delete(categoryId);
     }
-
-
 
 
 }

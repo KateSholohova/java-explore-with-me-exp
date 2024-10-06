@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import ru.practicum.exceptions.NotFoundException;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -22,15 +21,15 @@ public class CategoryService {
     }
 
     public void delete(int categoryId) {
-        if(categoryRepository.existsById(categoryId)) {
+        if (categoryRepository.existsById(categoryId)) {
             categoryRepository.deleteById(categoryId);
         } else {
             throw new NotFoundException("Category not found");
         }
     }
 
-    public Category update( CategoryDto categoryDto, int categoryId) {
-        if(categoryRepository.existsById(categoryId)) {
+    public Category update(CategoryDto categoryDto, int categoryId) {
+        if (categoryRepository.existsById(categoryId)) {
             Category category = CategoryMapper.toCategory(categoryDto);
             category.setId(categoryId);
             categoryRepository.save(category);
@@ -40,12 +39,12 @@ public class CategoryService {
         }
     }
 
-    public List<Category> findAll(){
+    public List<Category> findAll() {
         return categoryRepository.findAll();
     }
 
     public Category findById(int categoryId) {
-        if(categoryRepository.existsById(categoryId)) {
+        if (categoryRepository.existsById(categoryId)) {
             return (categoryRepository.findById(categoryId).get());
         } else {
             throw new NotFoundException("Category not found");

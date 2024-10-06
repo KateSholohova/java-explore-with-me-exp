@@ -20,7 +20,7 @@ public class CategoryControllerPublic {
     }
 
     @GetMapping("/{categoryId}")
-    public  Category findById(@PathVariable("categoryId") int categoryId) {
+    public Category findById(@PathVariable("categoryId") int categoryId) {
         return categoryService.findById(categoryId);
     }
 }
