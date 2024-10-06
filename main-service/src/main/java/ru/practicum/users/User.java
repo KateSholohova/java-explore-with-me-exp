@@ -1,19 +1,20 @@
-package ru.practicum.categories;
+package ru.practicum.users;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import org.hibernate.validator.constraints.Length;
 
 @Entity
-@Table(name = "categories")
+@Table(name = "users")
 @Data
-public class Category {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @NotBlank
-    @Length(min = 1, max = 50)
-    @Column(unique = true)
     private String name;
+    @Email
+    @NotBlank
+    private String email;
 }

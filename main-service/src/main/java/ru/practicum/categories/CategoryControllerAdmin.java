@@ -14,8 +14,8 @@ public class CategoryControllerAdmin {
     private final CategoryService categoryService;
 
     @PostMapping
-    public CategoryDto create(@RequestBody @Valid CategoryDto categoryDto) {
-        return categoryService.create(categoryDto);
+    public Category create(@RequestBody @Valid Category category) {
+        return categoryService.create(category);
     }
 
     @PatchMapping("/{categoryId}")

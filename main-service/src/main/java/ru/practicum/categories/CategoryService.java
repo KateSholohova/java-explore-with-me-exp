@@ -13,11 +13,9 @@ import java.util.List;
 public class CategoryService {
     private final CategoryRepository categoryRepository;
 
-    public CategoryDto create(CategoryDto categoryDto) {
-        log.info("BBBBBB{}", categoryDto.getName().isBlank());
-        Category category = CategoryMapper.toCategory(categoryDto);
+    public Category create(Category category) {
         categoryRepository.save(category);
-        return CategoryMapper.toCategoryDto(category);
+        return category;
     }
 
     public void delete(int categoryId) {
