@@ -15,7 +15,7 @@ public class ErrorHandler {
         return new ErrorResponse("Искомый объект не найден", e.getMessage());
     }
 
-    @ExceptionHandler({ValidationException.class, MethodArgumentNotValidException.class})
+    @ExceptionHandler({MethodArgumentNotValidException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationException(final Exception e) {
         return new ErrorResponse("Ошибка валидации", e.getMessage());

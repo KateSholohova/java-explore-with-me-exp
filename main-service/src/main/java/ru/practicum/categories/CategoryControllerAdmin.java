@@ -20,7 +20,7 @@ public class CategoryControllerAdmin {
 
     @PatchMapping("/{categoryId}")
     public Category update(@PathVariable("categoryId") int categoryId,
-                          @RequestBody @Valid CategoryDto categoryDto) {
+                           @RequestBody @Valid CategoryDto categoryDto) {
         return categoryService.update(categoryDto, categoryId);
     }
 
