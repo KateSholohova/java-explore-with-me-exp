@@ -24,7 +24,7 @@ public class Event {
     private String title;
     @NotBlank
     private String description;
-    @NotBlank
+    @NotNull
     @Future
     private LocalDateTime eventDate;
     private LocalDateTime createdOn;
