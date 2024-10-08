@@ -14,14 +14,14 @@ public class CategoryControllerAdmin {
     private final CategoryService categoryService;
 
     @PostMapping
-    public Category create(@RequestBody @Valid Category category) {
-        return categoryService.create(category);
+    public CategoryDto create(@RequestBody @Valid NewCategoryDto newCategoryDto) {
+        return categoryService.create(newCategoryDto);
     }
 
     @PatchMapping("/{categoryId}")
-    public Category update(@PathVariable("categoryId") int categoryId,
-                           @RequestBody @Valid CategoryDto categoryDto) {
-        return categoryService.update(categoryDto, categoryId);
+    public CategoryDto update(@PathVariable("categoryId") int categoryId,
+                           @RequestBody @Valid NewCategoryDto newCategoryDto) {
+        return categoryService.update(newCategoryDto, categoryId);
     }
 
     @DeleteMapping("/{categoryId}")

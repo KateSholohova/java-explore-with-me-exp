@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.exceptions.NotFoundException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -13,9 +14,10 @@ import java.util.List;
 public class CategoryService {
     private final CategoryRepository categoryRepository;
 
-    public Category create(Category category) {
+    public CategoryDto create(NewCategoryDto newCategoryDto) {
+        Category category = CategoryMapper.fromNewCategoryDtoToCategory(newCategoryDto);
         categoryRepository.save(category);
-        return category;
+        return CategoryMapper.toCategoryDto(category);
     }
 
     public void delete(int categoryId) {
@@ -26,24 +28,28 @@ public class CategoryService {
         }
     }
 
-    public Category update(CategoryDto categoryDto, int categoryId) {
+    public CategoryDto update(NewCategoryDto newCategoryDto, int categoryId) {
         if (categoryRepository.existsById(categoryId)) {
-            Category category = CategoryMapper.toCategory(categoryDto);
+            Category category = CategoryMapper.fromNewCategoryDtoToCategory(newCategoryDto);
             category.setId(categoryId);
             categoryRepository.save(category);
-            return category;
+            return CategoryMapper.toCategoryDto(category);
         } else {
             throw new NotFoundException("Category not found");
         }
     }
 
-    public List<Category> findAll() {
-        return categoryRepository.findAll();
+    public List<CategoryDto> findAll(int from, int size) {
+        List<CategoryDto> categoryDtoList = categoryRepository.findAll().stream()
+                .map(CategoryMapper::toCategoryDto)
+                .collect(Collectors.toList());
+        return categoryDtoList.subList(from, from + size);
+
     }
 
-    public Category findById(int categoryId) {
+    public CategoryDto findById(int categoryId) {
         if (categoryRepository.existsById(categoryId)) {
-            return (categoryRepository.findById(categoryId).get());
+            return (CategoryMapper.toCategoryDto(categoryRepository.findById(categoryId).get()));
         } else {
             throw new NotFoundException("Category not found");
         }

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.exceptions.NotFoundException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -13,9 +14,10 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
 
-    public User create(User user) {
+    public UserDto create(UserShortDto userShortDto) {
+        User user = UserMapper.fromUserShortDtoToUser(userShortDto);
         userRepository.save(user);
-        return user;
+        return UserMapper.toUserDto(user);
     }
 
     public void delete(int userId) {
@@ -26,8 +28,11 @@ public class UserService {
         }
     }
 
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public List<UserDto> findAll(int from, int size) {
+        List<UserDto> userDtoList = userRepository.findAll().stream()
+                .map(UserMapper::toUserDto)
+                .collect(Collectors.toList());
+        return userDtoList.subList(from, from + size);
     }
 
 }
