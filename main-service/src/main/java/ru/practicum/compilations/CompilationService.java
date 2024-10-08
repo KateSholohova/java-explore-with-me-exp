@@ -41,8 +41,7 @@ public class CompilationService {
     }
 
     public List<CompilationDto> getAll(boolean pinned, int from, int size) {
-        List<Compilation> comps = compilationRepository.findAllByPinned(pinned);
-        comps.subList(from, from + size);
+        List<Compilation> comps = compilationRepository.findAllByPinned(pinned).subList(from, from + size);
         return comps.stream()
                 .map(CompilationMapper::toCompilationDto)
                 .toList();
