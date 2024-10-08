@@ -32,11 +32,7 @@ public class UserService {
         List<UserDto> userDtoList = userRepository.findAll().stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
-        if (userDtoList.size() < from && userDtoList.size() < size) {
-            return userDtoList;
-        }
-        if (userDtoList.size() < size) {
-        }
+
         return userDtoList.subList(from, from + size);
     }
 
