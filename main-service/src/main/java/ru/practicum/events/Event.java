@@ -3,6 +3,7 @@ package ru.practicum.events;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import ru.practicum.categories.Category;
 import ru.practicum.events.location.Location;
@@ -29,11 +30,11 @@ public class Event {
     private LocalDateTime createdOn;
     private LocalDateTime publishedOn;
     private int confirmedRequests;
-    @NotBlank
+    @NotNull
     private Boolean paid;
-    @NotBlank
+    @NotNull
     private Boolean requestModeration;
-    @NotBlank
+    @NotNull
     private int participantLimit;
     private int views;
     @Column(name = "status")

@@ -2,6 +2,7 @@ package ru.practicum.events;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import ru.practicum.events.location.Location;
 
@@ -16,15 +17,15 @@ public class NewEventDto {
     @NotBlank
     @Future
     private String eventDate;
-    @NotBlank
+    @NotNull
     private boolean paid;
-    @NotBlank
+    @NotNull
     private boolean requestModeration;
-    @NotBlank
+    @NotNull
     private int participantLimit;
-    @NotBlank
+    @NotNull
     private int category;
-    @NotBlank
+    @NotNull
     private Location location;
 
 }
