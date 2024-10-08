@@ -1,7 +1,6 @@
 package ru.practicum.events;
 
 import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import ru.practicum.events.location.Location;
 

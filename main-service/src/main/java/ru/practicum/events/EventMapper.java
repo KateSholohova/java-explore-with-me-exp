@@ -5,7 +5,7 @@ import ru.practicum.users.UserMapper;
 
 public class EventMapper {
 
-    public static Event fromNewEventDroToEvent(NewEventDto newEventDto){
+    public static Event fromNewEventDroToEvent(NewEventDto newEventDto) {
         Event event = new Event();
         event.setEventDate(newEventDto.getEventDate());
         event.setAnnotation(newEventDto.getAnnotation());
@@ -17,7 +17,7 @@ public class EventMapper {
         return event;
     }
 
-    public static EventFullDto toEventFullDto(Event event){
+    public static EventFullDto toEventFullDto(Event event) {
         EventFullDto eventFullDto = new EventFullDto();
         eventFullDto.setEventDate(event.getEventDate());
         eventFullDto.setAnnotation(event.getAnnotation());
@@ -38,7 +38,7 @@ public class EventMapper {
         return eventFullDto;
     }
 
-    public static EventShortDto toEventShortDto(Event event){
+    public static EventShortDto toEventShortDto(Event event) {
         EventShortDto eventShortDto = new EventShortDto();
         eventShortDto.setEventDate(event.getEventDate());
         eventShortDto.setAnnotation(event.getAnnotation());

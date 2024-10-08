@@ -3,7 +3,6 @@ package ru.practicum.compilations;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,9 +17,9 @@ public class CompilationControllerPublic {
     @GetMapping
     public List<CompilationDto> getAll(@RequestParam boolean pinned,
                                        @RequestParam(defaultValue = "0")
-                                           @PositiveOrZero Integer from,
+                                       @PositiveOrZero Integer from,
                                        @RequestParam(defaultValue = "10")
-                                           @Positive Integer size){
+                                       @Positive Integer size) {
         return compilationService.getAll(pinned, from, size);
     }
 

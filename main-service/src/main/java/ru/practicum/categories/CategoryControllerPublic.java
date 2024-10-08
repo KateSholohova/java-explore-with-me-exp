@@ -15,9 +15,9 @@ public class CategoryControllerPublic {
 
     @GetMapping
     public List<CategoryDto> findAll(@RequestParam(defaultValue = "0")
-                                         @PositiveOrZero Integer from,
+                                     @PositiveOrZero Integer from,
                                      @RequestParam(defaultValue = "10")
-                                         @Positive Integer size) {
+                                     @Positive Integer size) {
         return categoryService.findAll(from, size);
     }
 

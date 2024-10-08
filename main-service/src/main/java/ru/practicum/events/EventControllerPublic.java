@@ -23,15 +23,15 @@ public class EventControllerPublic {
                                            @RequestParam boolean onlyAvailable,
                                            @RequestParam String sort,
                                            @RequestParam(defaultValue = "0")
-                                               @PositiveOrZero Integer from,
+                                           @PositiveOrZero Integer from,
                                            @RequestParam(defaultValue = "10")
-                                               @Positive Integer size){
-       return eventService.searchPublic(text, categories, paid,rangeStart, rangeEnd, onlyAvailable, sort, from, size);
+                                           @Positive Integer size) {
+        return eventService.searchPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
 
     }
 
     @GetMapping("/{id}")
-    public EventFullDto findByIdPublic(@PathVariable Integer id){
+    public EventFullDto findByIdPublic(@PathVariable Integer id) {
         return eventService.findByIdPublic(id);
     }
 }

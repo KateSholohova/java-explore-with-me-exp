@@ -1,7 +1,6 @@
 package ru.practicum.events;
 
 import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import ru.practicum.events.location.Location;
 
@@ -19,5 +18,5 @@ public class UpdateEventAdminRequest {
     private int participantLimit;
     private int category;
     private Location location;
-    private  StateActionAdmin stateAction;
+    private StateActionAdmin stateAction;
 }

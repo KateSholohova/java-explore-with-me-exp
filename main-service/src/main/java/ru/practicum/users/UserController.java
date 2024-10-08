@@ -28,9 +28,9 @@ public class UserController {
 
     @GetMapping
     public List<UserDto> findAll(@RequestParam(defaultValue = "0")
-                                     @PositiveOrZero Integer from,
+                                 @PositiveOrZero Integer from,
                                  @RequestParam(defaultValue = "10")
-                                     @Positive Integer size) {
+                                 @Positive Integer size) {
         return userService.findAll(from, size);
     }
 

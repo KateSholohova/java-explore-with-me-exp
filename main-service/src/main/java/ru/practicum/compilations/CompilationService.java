@@ -14,7 +14,7 @@ import java.util.List;
 public class CompilationService {
 
     private final CompilationRepository compilationRepository;
-    private  final EventRepository eventRepository;
+    private final EventRepository eventRepository;
 
     public CompilationDto create(NewCompilationDto newCompilationDto) {
         Compilation compilation = CompilationMapper.toCompilation(newCompilationDto);
@@ -23,8 +23,8 @@ public class CompilationService {
         return CompilationMapper.toCompilationDto(compilation);
     }
 
-    public void delete(int compId){
-        if(compilationRepository.existsById(compId)){
+    public void delete(int compId) {
+        if (compilationRepository.existsById(compId)) {
             compilationRepository.deleteById(compId);
         } else {
             throw new NotFoundException("Compilation not found");
@@ -49,7 +49,7 @@ public class CompilationService {
     }
 
     public CompilationDto findById(int compId) {
-        if(compilationRepository.existsById(compId)){
+        if (compilationRepository.existsById(compId)) {
             return CompilationMapper.toCompilationDto(compilationRepository.findById(compId).get());
         } else {
             throw new NotFoundException("Compilation not found");

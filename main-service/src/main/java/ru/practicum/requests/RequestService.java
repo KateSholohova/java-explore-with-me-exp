@@ -21,16 +21,16 @@ public class RequestService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
 
-    public RequestDto create(int userId, int eventId){
-        if(eventRepository.existsById(eventId) && userRepository.existsById(userId)){
+    public RequestDto create(int userId, int eventId) {
+        if (eventRepository.existsById(eventId) && userRepository.existsById(userId)) {
             Event event = eventRepository.findById(eventId).get();
-            if(event.getState().equals(State.PUBLISHED)){
-                if(event.getInitiator().getId() == userId){
-                    if(event.getParticipantLimit() > event.getConfirmedRequests()){
-                        if(requestRepository.existsByRequesterIdAndEventId(userId, eventId)){
+            if (event.getState().equals(State.PUBLISHED)) {
+                if (event.getInitiator().getId() == userId) {
+                    if (event.getParticipantLimit() > event.getConfirmedRequests()) {
+                        if (requestRepository.existsByRequesterIdAndEventId(userId, eventId)) {
                             Request request = new Request();
                             request.setCreated(LocalDateTime.now());
-                            if(event.getRequestModeration() && event.getParticipantLimit() != 0){
+                            if (event.getRequestModeration() && event.getParticipantLimit() != 0) {
                                 request.setStatus(Status.PENDING);
                             } else {
                                 event.setConfirmedRequests(event.getConfirmedRequests() + 1);
@@ -48,7 +48,7 @@ public class RequestService {
                         throw new RuntimeException("Participant limit exceeded");
                     }
                 } else {
-                    throw  new RuntimeException("It is your event");
+                    throw new RuntimeException("It is your event");
                 }
             } else {
                 throw new RuntimeException("Must be published");
@@ -58,8 +58,8 @@ public class RequestService {
         }
     }
 
-    public List<RequestDto> findAllByRequesterId(int userId){
-        if(userRepository.existsById(userId)){
+    public List<RequestDto> findAllByRequesterId(int userId) {
+        if (userRepository.existsById(userId)) {
             return requestRepository.findAllByRequesterId(userId).stream()
                     .map(RequestMapper::toRequestDto)
                     .toList();
@@ -69,17 +69,16 @@ public class RequestService {
         }
     }
 
-    public RequestDto cancel(int userId, int requestId){
-        if(requestRepository.existsById(requestId) && userRepository.existsById(userId)){
-           Request request = requestRepository.findById(requestId).get();
-           request.setStatus(Status.CANCELED);
-           requestRepository.save(request);
-           return RequestMapper.toRequestDto(request);
+    public RequestDto cancel(int userId, int requestId) {
+        if (requestRepository.existsById(requestId) && userRepository.existsById(userId)) {
+            Request request = requestRepository.findById(requestId).get();
+            request.setStatus(Status.CANCELED);
+            requestRepository.save(request);
+            return RequestMapper.toRequestDto(request);
         } else {
             throw new NotFoundException("Request or user not found");
         }
     }
-
 
 
 }

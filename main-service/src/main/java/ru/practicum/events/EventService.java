@@ -10,8 +10,8 @@ import ru.practicum.events.location.Location;
 import ru.practicum.events.location.LocationRepository;
 import ru.practicum.exceptions.NotFoundException;
 import ru.practicum.exceptions.ValidationException;
-import ru.practicum.requests.*;
 import ru.practicum.requests.Status;
+import ru.practicum.requests.*;
 import ru.practicum.users.User;
 import ru.practicum.users.UserRepository;
 
@@ -50,19 +50,19 @@ public class EventService {
         return EventMapper.toEventFullDto(event);
     }
 
-    public List<EventFullDto> findAllByInitiatorId(int from, int size,int userId) {
-        if(userRepository.existsById(userId)) {
-            List<EventFullDto> eventFullDtoList= eventRepository.findAllByInitiatorId(userId).stream()
+    public List<EventFullDto> findAllByInitiatorId(int from, int size, int userId) {
+        if (userRepository.existsById(userId)) {
+            List<EventFullDto> eventFullDtoList = eventRepository.findAllByInitiatorId(userId).stream()
                     .map(EventMapper::toEventFullDto)
                     .collect(Collectors.toList());
-            return eventFullDtoList.subList(from, from+size);
+            return eventFullDtoList.subList(from, from + size);
         } else {
             throw new NotFoundException("User not found");
         }
     }
 
     public EventFullDto findEventByInitiatorId(int userId, int eventId) {
-        if(userRepository.existsById(userId)) {
+        if (userRepository.existsById(userId)) {
 //            List<EventFullDto> eventFullDtoList= eventRepository.findAllByInitiatorId(userId).stream()
 //                    .map(EventMapper::toEventFullDto)
 //                    .toList();
@@ -70,7 +70,7 @@ public class EventService {
 //                    .filter(e -> e.getId() == eventId)
 //                    .findFirst()
 //                    .orElseThrow(() -> new NotFoundException("Event not found"));
-            if(eventRepository.existsByIdAndInitiatorId(userId, eventId)) {
+            if (eventRepository.existsByIdAndInitiatorId(userId, eventId)) {
                 return EventMapper.toEventFullDto(eventRepository.findEventByIdAndInitiatorId(userId, eventId));
             } else {
                 throw new NotFoundException("Event not found");
@@ -81,12 +81,12 @@ public class EventService {
     }
 
     public EventFullDto updateByInitiator(int userId, int eventId, UpdateEventUserRequest updateEventUserRequest) {
-        if(userRepository.existsById(userId)) {
-            if(eventRepository.existsByIdAndInitiatorId(userId, eventId)) {
-                if(eventRepository.findEventByIdAndInitiatorId(userId, eventId).getState() == State.PENDING ||
+        if (userRepository.existsById(userId)) {
+            if (eventRepository.existsByIdAndInitiatorId(userId, eventId)) {
+                if (eventRepository.findEventByIdAndInitiatorId(userId, eventId).getState() == State.PENDING ||
                         eventRepository.findEventByIdAndInitiatorId(userId, eventId).getState() == State.CANCELED) {
                     Event event = eventRepository.findById(eventId).get();
-                    if(updateEventUserRequest.getStateAction().equals(StateActionUser.CANCEL_REVIEW)){
+                    if (updateEventUserRequest.getStateAction().equals(StateActionUser.CANCEL_REVIEW)) {
                         event.setState(State.CANCELED);
                     }
                     if (updateEventUserRequest.getStateAction().equals(StateActionUser.SEND_TO_REVIEW)) {
@@ -98,7 +98,7 @@ public class EventService {
                             updateEventUserRequest.getTitle(), updateEventUserRequest.getCategory(),
                             updateEventUserRequest.getPaid(), updateEventUserRequest.getRequestModeration());
                 }
-                throw  new ValidationException("Event must not be published");
+                throw new ValidationException("Event must not be published");
             } else {
                 throw new NotFoundException("Event not found");
             }
@@ -109,34 +109,34 @@ public class EventService {
 
     public EventFullDto updateByAdmin(int eventId, UpdateEventAdminRequest updateEventAdminRequest) {
 
-            if(eventRepository.existsById(eventId)) {
-                Event event = eventRepository.findById(eventId).get();
-                if(updateEventAdminRequest.getStateAction() == StateActionAdmin.REJECT_EVENT &&
-                event.getState() != State.PUBLISHED){
-                    event.setState(State.CANCELED);
-                } else {
-                    throw new ValidationException("Event must not be published");
-                }
-                if(updateEventAdminRequest.getStateAction() == StateActionAdmin.PUBLISH_EVENT &&
-                        event.getState() == State.PENDING){
-                    event.setState(State.PUBLISHED);
-                } else {
-                    throw new ValidationException("Event must be pending");
-                }
-
-                return checkParameters(event, updateEventAdminRequest.getParticipantLimit(),
-                        updateEventAdminRequest.getEventDate(), updateEventAdminRequest.getLocation(),
-                        updateEventAdminRequest.getDescription(), updateEventAdminRequest.getAnnotation(),
-                        updateEventAdminRequest.getTitle(), updateEventAdminRequest.getCategory(),
-                        updateEventAdminRequest.getPaid(), updateEventAdminRequest.getRequestModeration());
-
+        if (eventRepository.existsById(eventId)) {
+            Event event = eventRepository.findById(eventId).get();
+            if (updateEventAdminRequest.getStateAction() == StateActionAdmin.REJECT_EVENT &&
+                    event.getState() != State.PUBLISHED) {
+                event.setState(State.CANCELED);
             } else {
-                throw new NotFoundException("Event not found");
+                throw new ValidationException("Event must not be published");
             }
+            if (updateEventAdminRequest.getStateAction() == StateActionAdmin.PUBLISH_EVENT &&
+                    event.getState() == State.PENDING) {
+                event.setState(State.PUBLISHED);
+            } else {
+                throw new ValidationException("Event must be pending");
+            }
+
+            return checkParameters(event, updateEventAdminRequest.getParticipantLimit(),
+                    updateEventAdminRequest.getEventDate(), updateEventAdminRequest.getLocation(),
+                    updateEventAdminRequest.getDescription(), updateEventAdminRequest.getAnnotation(),
+                    updateEventAdminRequest.getTitle(), updateEventAdminRequest.getCategory(),
+                    updateEventAdminRequest.getPaid(), updateEventAdminRequest.getRequestModeration());
+
+        } else {
+            throw new NotFoundException("Event not found");
+        }
     }
 
-    public List<EventFullDto> searchAdmin(List<Integer> users, List<String> states,List<Integer> categories,
-                                     String rangeEnd, String rangeStart, int from, int size){
+    public List<EventFullDto> searchAdmin(List<Integer> users, List<String> states, List<Integer> categories,
+                                          String rangeEnd, String rangeStart, int from, int size) {
         List<Event> events = eventRepository.findAllByInitiatorIdInAndCategoryIdIn(users, categories).stream()
                 .filter(e -> e.getEventDate().isBefore(LocalDateTime.parse(rangeStart)) &&
                         e.getEventDate().isAfter(LocalDateTime.parse(rangeEnd)) && states.contains(e.getState().toString()))
@@ -144,7 +144,7 @@ public class EventService {
         return events.stream()
                 .map(EventMapper::toEventFullDto)
                 .collect(Collectors.toList())
-                .subList(from, from+size);
+                .subList(from, from + size);
     }
 
     public List<EventFullDto> searchPublic(String text, List<Integer> categories, boolean paid, String rangeStart,
@@ -174,9 +174,9 @@ public class EventService {
     }
 
     public EventFullDto findByIdPublic(int id) {
-        if(eventRepository.existsById(id)) {
+        if (eventRepository.existsById(id)) {
             Event event = eventRepository.findById(id).get();
-            if(event.getState().equals(State.PUBLISHED)){
+            if (event.getState().equals(State.PUBLISHED)) {
                 return EventMapper.toEventFullDto(event);
             } else {
                 throw new ValidationException("Event must be published");
@@ -194,18 +194,18 @@ public class EventService {
     }
 
     public EventRequestStatusUpdateResult updateRequestStatus(int userId, int eventId,
-                                                              EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest){
+                                                              EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
 
-        if(eventRepository.existsById(eventId)){
+        if (eventRepository.existsById(eventId)) {
             Event event = eventRepository.findById(eventId).get();
-            if(event.getParticipantLimit() < event.getConfirmedRequests()){
+            if (event.getParticipantLimit() < event.getConfirmedRequests()) {
                 List<Request> requests = requestRepository.findAllByIdIn(eventRequestStatusUpdateRequest.getRequestIds());
                 List<Request> rejectedRequests = new ArrayList<>();
                 List<Request> acceptedRequests = new ArrayList<>();
-                for(Request request : requests){
-                    if(request.getStatus().equals(Status.PENDING)){
-                        if(eventRequestStatusUpdateRequest.getStatus().equals(ru.practicum.events.Status.CONFIRMED)){
-                            if(event.getParticipantLimit() < event.getConfirmedRequests()){
+                for (Request request : requests) {
+                    if (request.getStatus().equals(Status.PENDING)) {
+                        if (eventRequestStatusUpdateRequest.getStatus().equals(ru.practicum.events.Status.CONFIRMED)) {
+                            if (event.getParticipantLimit() < event.getConfirmedRequests()) {
                                 request.setStatus(Status.CONFIRMED);
                                 acceptedRequests.add(request);
                                 requestRepository.save(request);
@@ -245,39 +245,36 @@ public class EventService {
     private EventFullDto checkParameters(Event event, int participantLimit, LocalDateTime eventDate, Location location,
                                          String description, String annotation, String title, int category,
                                          Boolean paid, Boolean requestModeration) {
-        if(participantLimit != 0){
+        if (participantLimit != 0) {
             event.setParticipantLimit(participantLimit);
         }
-        if (eventDate != null){
+        if (eventDate != null) {
             event.setEventDate(eventDate);
         }
-        if(location != null){
+        if (location != null) {
             event.setLocation(location);
         }
-        if(description != null){
+        if (description != null) {
             event.setDescription(description);
         }
-        if(annotation != null){
+        if (annotation != null) {
             event.setAnnotation(annotation);
         }
-        if (title != null){
+        if (title != null) {
             event.setTitle(title);
         }
-        if(category != 0){
+        if (category != 0) {
             event.setCategory(categoryRepository.findById(category).get());
         }
-        if(paid != null){
+        if (paid != null) {
             event.setPaid(paid);
         }
-        if(requestModeration != null){
+        if (requestModeration != null) {
             event.setRequestModeration(requestModeration);
         }
         eventRepository.save(event);
         return EventMapper.toEventFullDto(event);
     }
-
-
-
 
 
 }
