@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserRepository userRepository;
 
-    public UserDto create(UserShortDto userShortDto) {
-        User user = UserMapper.fromUserShortDtoToUser(userShortDto);
+    public UserDto create(NewUserRequest newUserRequest) {
+        User user = UserMapper.fromNewUserRequestToUser(newUserRequest);
         userRepository.save(user);
         return UserMapper.toUserDto(user);
     }
@@ -32,6 +32,9 @@ public class UserService {
         List<UserDto> userDtoList = userRepository.findAll().stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
+        if(userDtoList.size() < from && userDtoList.size() < size ) {
+            return userDtoList;
+        } if(userDtoList.size() < size ) {}
         return userDtoList.subList(from, from + size);
     }
 
