@@ -16,6 +16,7 @@ import ru.practicum.users.User;
 import ru.practicum.users.UserRepository;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -31,6 +32,8 @@ public class EventService {
     private final UserRepository userRepository;
     private final LocationRepository locationRepository;
     private final RequestRepository requestRepository;
+
+    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public EventFullDto create(NewEventDto newEventDto, int userId) {
         Event event = EventMapper.fromNewEventDroToEvent(newEventDto);
@@ -138,8 +141,8 @@ public class EventService {
     public List<EventFullDto> searchAdmin(List<Integer> users, List<String> states, List<Integer> categories,
                                           String rangeEnd, String rangeStart, int from, int size) {
         List<Event> events = eventRepository.findAllByInitiatorIdInAndCategoryIdIn(users, categories).stream()
-                .filter(e -> e.getEventDate().isBefore(LocalDateTime.parse(rangeStart)) &&
-                        e.getEventDate().isAfter(LocalDateTime.parse(rangeEnd)) && states.contains(e.getState().toString()))
+                .filter(e -> e.getEventDate().isBefore(LocalDateTime.parse(rangeStart, formatter)) &&
+                        e.getEventDate().isAfter(LocalDateTime.parse(rangeEnd, formatter)) && states.contains(e.getState().toString()))
                 .toList();
         return events.stream()
                 .map(EventMapper::toEventFullDto)
@@ -149,8 +152,8 @@ public class EventService {
 
     public List<EventFullDto> searchPublic(String text, List<Integer> categories, boolean paid, String rangeStart,
                                            String rangeEnd, boolean onlyAvailable, String sort, int from, int size) {
-        LocalDateTime startDateTime = rangeStart != null ? LocalDateTime.parse(rangeStart) : null;
-        LocalDateTime endDateTime = rangeEnd != null ? LocalDateTime.parse(rangeEnd) : null;
+        LocalDateTime startDateTime = rangeStart != null ? LocalDateTime.parse(rangeStart, formatter) : null;
+        LocalDateTime endDateTime = rangeEnd != null ? LocalDateTime.parse(rangeEnd, formatter) : null;
 
         List<Event> events = eventRepository.findAllByCategoryIdIn(categories)
                 .stream()

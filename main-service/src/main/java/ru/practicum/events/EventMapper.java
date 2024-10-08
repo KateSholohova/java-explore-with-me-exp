@@ -3,11 +3,16 @@ package ru.practicum.events;
 import ru.practicum.categories.CategoryMapper;
 import ru.practicum.users.UserMapper;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 public class EventMapper {
+
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public static Event fromNewEventDroToEvent(NewEventDto newEventDto) {
         Event event = new Event();
-        event.setEventDate(newEventDto.getEventDate());
+        event.setEventDate(LocalDateTime.parse(newEventDto.getEventDate(), formatter));
         event.setAnnotation(newEventDto.getAnnotation());
         event.setDescription(newEventDto.getDescription());
         event.setTitle(newEventDto.getTitle());

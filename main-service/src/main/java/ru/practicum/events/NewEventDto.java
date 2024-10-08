@@ -5,8 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import ru.practicum.events.location.Location;
 
-import java.time.LocalDateTime;
-
 @Data
 public class NewEventDto {
     @NotBlank
@@ -17,7 +15,7 @@ public class NewEventDto {
     private String description;
     @NotBlank
     @Future
-    private LocalDateTime eventDate;
+    private String eventDate;
     @NotBlank
     private boolean paid;
     @NotBlank
