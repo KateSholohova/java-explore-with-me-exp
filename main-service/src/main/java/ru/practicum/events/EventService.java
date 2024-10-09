@@ -47,6 +47,7 @@ public class EventService {
         event.setLocation(location);
         event.setCreatedOn(LocalDateTime.now());
         event.setPublishedOn(LocalDateTime.now());
+        event.setConfirmedRequests(0);
         event.setState(State.PENDING);
         event.setViews(0);
         eventRepository.save(event);

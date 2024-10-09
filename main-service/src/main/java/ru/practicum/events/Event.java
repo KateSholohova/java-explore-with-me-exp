@@ -26,15 +26,21 @@ public class Event {
     private String description;
     @NotNull
     @Future
+    @Column(name = "event_date")
     private LocalDateTime eventDate;
+    @Column(name = "created_on")
     private LocalDateTime createdOn;
+    @Column(name = "published_on")
     private LocalDateTime publishedOn;
+    @Column(name = "confirmed_requests")
     private int confirmedRequests;
     @NotNull
     private Boolean paid;
     @NotNull
+    @Column(name = "request_moderation")
     private Boolean requestModeration;
     @NotNull
+    @Column(name = "participant_limit")
     private int participantLimit;
     private int views;
     @Column(name = "status")
