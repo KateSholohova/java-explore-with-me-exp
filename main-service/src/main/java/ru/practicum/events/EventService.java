@@ -115,13 +115,10 @@ public class EventService {
 
         if (eventRepository.existsById(eventId)) {
             Event event = eventRepository.findById(eventId).get();
-            if (updateEventAdminRequest.getStateAction() == StateActionAdmin.REJECT_EVENT &&
-                    event.getState() != State.PUBLISHED) {
+            if (updateEventAdminRequest.getStateAction().equals(StateActionAdmin.REJECT_EVENT) &&
+                    !event.getState().equals(State.PUBLISHED)) {
                 event.setState(State.CANCELED);
-            } else {
-                throw new ValidationException("Event must not be published");
-            }
-            if (updateEventAdminRequest.getStateAction() == StateActionAdmin.PUBLISH_EVENT &&
+            } else if (updateEventAdminRequest.getStateAction() == StateActionAdmin.PUBLISH_EVENT &&
                     event.getState() == State.PENDING) {
                 event.setState(State.PUBLISHED);
             } else {
