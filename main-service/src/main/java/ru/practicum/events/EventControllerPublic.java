@@ -15,16 +15,16 @@ public class EventControllerPublic {
     private final EventService eventService;
 
     @GetMapping
-    public List<EventFullDto> searchPublic(@RequestParam String text,
-                                           @RequestParam List<Integer> categories,
-                                           @RequestParam boolean paid,
-                                           @RequestParam String rangeStart,
-                                           @RequestParam String rangeEnd,
-                                           @RequestParam boolean onlyAvailable,
-                                           @RequestParam String sort,
-                                           @RequestParam(defaultValue = "0")
+    public List<EventFullDto> searchPublic(@RequestParam(required = false) String text,
+                                           @RequestParam(required = false) List<Integer> categories,
+                                           @RequestParam(required = false) boolean paid,
+                                           @RequestParam(required = false) String rangeStart,
+                                           @RequestParam(required = false) String rangeEnd,
+                                           @RequestParam(required = false) boolean onlyAvailable,
+                                           @RequestParam(required = false) String sort,
+                                           @RequestParam(required = false)
                                            @PositiveOrZero Integer from,
-                                           @RequestParam(defaultValue = "10")
+                                           @RequestParam(required = false)
                                            @Positive Integer size) {
         return eventService.searchPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
 

@@ -2,6 +2,7 @@ package ru.practicum.events;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 import ru.practicum.events.location.Location;
 
@@ -20,6 +21,7 @@ public class NewEventDto {
     @NotNull
     private boolean requestModeration;
     @NotNull
+    @PositiveOrZero
     private int participantLimit;
     @NotNull
     private int category;

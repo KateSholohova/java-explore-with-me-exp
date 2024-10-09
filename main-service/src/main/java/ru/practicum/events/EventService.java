@@ -86,7 +86,7 @@ public class EventService {
 
     public EventFullDto updateByInitiator(int userId, int eventId, UpdateEventUserRequest updateEventUserRequest) {
         if (userRepository.existsById(userId)) {
-            if (eventRepository.existsByIdAndInitiatorId(userId, eventId)) {
+            if (eventRepository.existsByIdAndInitiatorId(eventId, userId)) {
                 if (eventRepository.findEventByIdAndInitiatorId(userId, eventId).getState() == State.PENDING ||
                         eventRepository.findEventByIdAndInitiatorId(userId, eventId).getState() == State.CANCELED) {
                     Event event = eventRepository.findById(eventId).get();
@@ -180,7 +180,7 @@ public class EventService {
             if (event.getState().equals(State.PUBLISHED)) {
                 return EventMapper.toEventFullDto(event);
             } else {
-                throw new ValidationException("Event must be published");
+                throw new NotFoundException("Event not found");
             }
         } else {
             throw new NotFoundException("Event not found");

@@ -25,7 +25,7 @@ public class RequestService {
         if (eventRepository.existsById(eventId) && userRepository.existsById(userId)) {
             Event event = eventRepository.findById(eventId).get();
             if (event.getState().equals(State.PUBLISHED)) {
-                if (event.getInitiator().getId() == userId) {
+                if (event.getInitiator().getId() != userId) {
                     if (event.getParticipantLimit() > event.getConfirmedRequests()) {
                         if (requestRepository.existsByRequesterIdAndEventId(userId, eventId)) {
                             Request request = new Request();

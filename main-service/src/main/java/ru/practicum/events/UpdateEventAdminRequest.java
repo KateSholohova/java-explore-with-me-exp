@@ -1,6 +1,7 @@
 package ru.practicum.events;
 
 import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 import ru.practicum.events.location.Location;
 
@@ -15,6 +16,7 @@ public class UpdateEventAdminRequest {
     private LocalDateTime eventDate;
     private Boolean paid;
     private Boolean requestModeration;
+    @PositiveOrZero
     private int participantLimit;
     private int category;
     private Location location;
