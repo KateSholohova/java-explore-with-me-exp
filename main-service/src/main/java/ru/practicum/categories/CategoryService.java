@@ -3,6 +3,7 @@ package ru.practicum.categories;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.exceptions.ConflictException;
 import ru.practicum.exceptions.NotFoundException;
 
 import java.util.List;
@@ -30,20 +31,27 @@ public class CategoryService {
 
     public CategoryDto update(NewCategoryDto newCategoryDto, int categoryId) {
         if (categoryRepository.existsById(categoryId)) {
-            Category category = CategoryMapper.fromNewCategoryDtoToCategory(newCategoryDto);
-            category.setId(categoryId);
-            categoryRepository.save(category);
-            return CategoryMapper.toCategoryDto(category);
+            if (categoryRepository.existsByName(newCategoryDto.getName())) {
+                throw new ConflictException("Category name already exists");
+            } else {
+                Category category = CategoryMapper.fromNewCategoryDtoToCategory(newCategoryDto);
+                category.setId(categoryId);
+                categoryRepository.save(category);
+                return CategoryMapper.toCategoryDto(category);
+            }
+
         } else {
             throw new NotFoundException("Category not found");
         }
     }
 
     public List<CategoryDto> findAll(int from, int size) {
-        List<CategoryDto> categoryDtoList = categoryRepository.findAll().stream()
+        return categoryRepository.findAll().stream()
                 .map(CategoryMapper::toCategoryDto)
+                .skip(from)
+                .limit(size)
                 .collect(Collectors.toList());
-        return categoryDtoList.subList(from, from + size);
+
 
     }
 

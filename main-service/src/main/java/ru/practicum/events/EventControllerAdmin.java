@@ -19,11 +19,11 @@ public class EventControllerAdmin {
     private final EventService eventService;
 
     @GetMapping
-    public List<EventFullDto> searchAdmin(@RequestParam List<Integer> users,
-                                          @RequestParam List<String> states,
-                                          @RequestParam List<Integer> categories,
-                                          @RequestParam String rangeStart,
-                                          @RequestParam String rangeEnd,
+    public List<EventFullDto> searchAdmin(@RequestParam(required = false) List<Integer> users,
+                                          @RequestParam(required = false) List<String> states,
+                                          @RequestParam(required = false) List<Integer> categories,
+                                          @RequestParam(required = false) String rangeStart,
+                                          @RequestParam(required = false) String rangeEnd,
                                           @RequestParam(defaultValue = "0")
                                           @PositiveOrZero Integer from,
                                           @RequestParam(defaultValue = "10")

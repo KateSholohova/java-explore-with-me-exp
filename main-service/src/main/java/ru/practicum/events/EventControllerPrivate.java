@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.requests.RequestDto;
@@ -18,6 +19,7 @@ public class EventControllerPrivate {
 
     private final EventService eventService;
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public EventFullDto create(@RequestBody @Valid NewEventDto newEventDto,
                                @PathVariable("userId") int userId) {

@@ -28,12 +28,14 @@ public class UserService {
         }
     }
 
-    public List<UserDto> findAll(int from, int size) {
-        List<UserDto> userDtoList = userRepository.findAll().stream()
+    public List<UserDto> findAll(int from, int size, List<Integer> ids) {
+        return userRepository.findAllByIdIn(ids).stream()
                 .map(UserMapper::toUserDto)
+                .skip(from)
+                .limit(size)
                 .collect(Collectors.toList());
 
-        return userDtoList.subList(from, from + size);
+
     }
 
 }

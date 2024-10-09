@@ -17,6 +17,9 @@ public class CompilationService {
     private final EventRepository eventRepository;
 
     public CompilationDto create(NewCompilationDto newCompilationDto) {
+        if (newCompilationDto.getPinned() == null) {
+            newCompilationDto.setPinned(false);
+        }
         Compilation compilation = CompilationMapper.toCompilation(newCompilationDto);
         compilation.setEvents(eventRepository.findAllByIdIn(newCompilationDto.getEvents()));
         compilationRepository.save(compilation);
@@ -34,10 +37,18 @@ public class CompilationService {
     public CompilationDto update(int compId, NewCompilationDto newCompilationDto) {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundException("Compilation not found"));
-        Compilation newCompilation = CompilationMapper.toCompilation(newCompilationDto);
-        newCompilation.setId(compId);
+        //Compilation newCompilation = CompilationMapper.toCompilation(newCompilationDto);
+        if (newCompilationDto.getPinned() != null) {
+            compilation.setPinned(newCompilationDto.getPinned());
+        }
+        if (newCompilationDto.getEvents() != null) {
+            compilation.setEvents(eventRepository.findAllByIdIn(newCompilationDto.getEvents()));
+        }
+        if (newCompilationDto.getTitle() != null) {
+            compilation.setTitle(newCompilationDto.getTitle());
+        }
         compilationRepository.save(compilation);
-        return CompilationMapper.toCompilationDto(newCompilation);
+        return CompilationMapper.toCompilationDto(compilation);
     }
 
     public List<CompilationDto> getAll(boolean pinned, int from, int size) {

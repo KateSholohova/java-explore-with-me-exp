@@ -1,6 +1,7 @@
 package ru.practicum.requests;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,6 +13,7 @@ public class RequestController {
 
     private final RequestService requestService;
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public RequestDto create(@PathVariable int userId, @RequestParam int eventId) {
         return requestService.create(userId, eventId);

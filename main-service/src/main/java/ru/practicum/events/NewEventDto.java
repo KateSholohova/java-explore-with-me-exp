@@ -1,26 +1,28 @@
 package ru.practicum.events;
 
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.practicum.events.location.Location;
 
 @Data
 public class NewEventDto {
     @NotBlank
+    @Size(min = 20, max = 2000)
     private String annotation;
     @NotBlank
+    @Size(min = 3, max = 120)
     private String title;
     @NotBlank
+    @Size(min = 20, max = 7000)
     private String description;
     @NotBlank
     private String eventDate;
-    @NotNull
-    private boolean paid;
-    @NotNull
-    private boolean requestModeration;
-    @NotNull
+    private Boolean paid;
+    private Boolean requestModeration;
     @PositiveOrZero
     private int participantLimit;
     @NotNull

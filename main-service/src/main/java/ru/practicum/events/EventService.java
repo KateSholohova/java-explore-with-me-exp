@@ -8,6 +8,7 @@ import ru.practicum.categories.Category;
 import ru.practicum.categories.CategoryRepository;
 import ru.practicum.events.location.Location;
 import ru.practicum.events.location.LocationRepository;
+import ru.practicum.exceptions.ConflictException;
 import ru.practicum.exceptions.NotFoundException;
 import ru.practicum.exceptions.ValidationException;
 import ru.practicum.requests.Status;
@@ -36,13 +37,20 @@ public class EventService {
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public EventFullDto create(NewEventDto newEventDto, int userId) {
+        if (newEventDto.getPaid() == null) {
+            newEventDto.setPaid(false);
+        }
+        if (newEventDto.getRequestModeration() == null) {
+            newEventDto.setRequestModeration(true);
+        }
         Event event = EventMapper.fromNewEventDroToEvent(newEventDto);
         Category category = categoryRepository.findById(newEventDto.getCategory())
                 .orElseThrow(() -> new NotFoundException("Category not found"));
         event.setCategory(category);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
-        event.setInitiator(user);
+        log.info("user: " + user);
+        event.setInitiator(userRepository.findById(userId).get());
         Location location = locationRepository.save(newEventDto.getLocation());
         event.setLocation(location);
         event.setCreatedOn(LocalDateTime.now());
@@ -59,7 +67,12 @@ public class EventService {
             List<EventFullDto> eventFullDtoList = eventRepository.findAllByInitiatorId(userId).stream()
                     .map(EventMapper::toEventFullDto)
                     .collect(Collectors.toList());
-            return eventFullDtoList.subList(from, from + size);
+            if (size > eventFullDtoList.size() - from) {
+                return eventFullDtoList.subList(from, eventFullDtoList.getLast().getId());
+            } else {
+                return eventFullDtoList.subList(from, from + size);
+            }
+
         } else {
             throw new NotFoundException("User not found");
         }
@@ -87,17 +100,20 @@ public class EventService {
     public EventFullDto updateByInitiator(int userId, int eventId, UpdateEventUserRequest updateEventUserRequest) {
         if (userRepository.existsById(userId)) {
             if (eventRepository.existsByIdAndInitiatorId(eventId, userId)) {
-                if (eventRepository.findEventByIdAndInitiatorId(userId, eventId).getState() == State.PENDING ||
-                        eventRepository.findEventByIdAndInitiatorId(userId, eventId).getState() == State.CANCELED) {
+                if (eventRepository.findById(eventId).get().getState() == State.PENDING ||
+                        eventRepository.findById(eventId).get().getState() == State.CANCELED) {
                     Event event = eventRepository.findById(eventId).get();
-                    if (updateEventUserRequest.getStateAction().equals(StateActionUser.CANCEL_REVIEW)) {
-                        event.setState(State.CANCELED);
-                    }
-                    if (updateEventUserRequest.getStateAction().equals(StateActionUser.SEND_TO_REVIEW)) {
-                        event.setState(State.PENDING);
+                    if (updateEventUserRequest.getStateAction() != null) {
+                        if (updateEventUserRequest.getStateAction().equals(StateActionUser.CANCEL_REVIEW)) {
+                            event.setState(State.CANCELED);
+                        }
+                        if (updateEventUserRequest.getStateAction().equals(StateActionUser.SEND_TO_REVIEW)) {
+                            event.setState(State.PENDING);
+                        }
                     }
                     return checkParameters(event, updateEventUserRequest.getParticipantLimit(),
-                            updateEventUserRequest.getEventDate(), updateEventUserRequest.getLocation(),
+                            LocalDateTime.parse(updateEventUserRequest.getEventDate(), formatter),
+                            updateEventUserRequest.getLocation(),
                             updateEventUserRequest.getDescription(), updateEventUserRequest.getAnnotation(),
                             updateEventUserRequest.getTitle(), updateEventUserRequest.getCategory(),
                             updateEventUserRequest.getPaid(), updateEventUserRequest.getRequestModeration());
@@ -115,18 +131,21 @@ public class EventService {
 
         if (eventRepository.existsById(eventId)) {
             Event event = eventRepository.findById(eventId).get();
-            if (updateEventAdminRequest.getStateAction().equals(StateActionAdmin.REJECT_EVENT) &&
-                    !event.getState().equals(State.PUBLISHED)) {
-                event.setState(State.CANCELED);
-            } else if (updateEventAdminRequest.getStateAction() == StateActionAdmin.PUBLISH_EVENT &&
-                    event.getState() == State.PENDING) {
-                event.setState(State.PUBLISHED);
-            } else {
-                throw new ValidationException("Event must be pending");
+            if (updateEventAdminRequest.getStateAction() != null) {
+                if (updateEventAdminRequest.getStateAction().equals(StateActionAdmin.REJECT_EVENT) &&
+                        !event.getState().equals(State.PUBLISHED)) {
+                    event.setState(State.CANCELED);
+                } else if (updateEventAdminRequest.getStateAction() == StateActionAdmin.PUBLISH_EVENT &&
+                        event.getState() == State.PENDING) {
+                    event.setState(State.PUBLISHED);
+                } else {
+                    throw new ConflictException("Event must be pending");
+                }
             }
 
             return checkParameters(event, updateEventAdminRequest.getParticipantLimit(),
-                    updateEventAdminRequest.getEventDate(), updateEventAdminRequest.getLocation(),
+                    LocalDateTime.parse(updateEventAdminRequest.getEventDate(), formatter),
+                    updateEventAdminRequest.getLocation(),
                     updateEventAdminRequest.getDescription(), updateEventAdminRequest.getAnnotation(),
                     updateEventAdminRequest.getTitle(), updateEventAdminRequest.getCategory(),
                     updateEventAdminRequest.getPaid(), updateEventAdminRequest.getRequestModeration());
@@ -138,14 +157,62 @@ public class EventService {
 
     public List<EventFullDto> searchAdmin(List<Integer> users, List<String> states, List<Integer> categories,
                                           String rangeEnd, String rangeStart, int from, int size) {
-        List<Event> events = eventRepository.findAllByInitiatorIdInAndCategoryIdIn(users, categories).stream()
-                .filter(e -> e.getEventDate().isBefore(LocalDateTime.parse(rangeStart, formatter)) &&
-                        e.getEventDate().isAfter(LocalDateTime.parse(rangeEnd, formatter)) && states.contains(e.getState().toString()))
-                .toList();
-        return events.stream()
-                .map(EventMapper::toEventFullDto)
-                .collect(Collectors.toList())
-                .subList(from, from + size);
+        LocalDateTime startDateTime = rangeStart != null ? LocalDateTime.parse(rangeStart, formatter) : null;
+        LocalDateTime endDateTime = rangeEnd != null ? LocalDateTime.parse(rangeEnd, formatter) : null;
+
+//        List<Event> events = eventRepository.findAllByInitiatorIdInAndCategoryIdIn(users, categories).stream()
+//                .filter(e -> e.getEventDate().isBefore(LocalDateTime.parse(rangeStart, formatter)) &&
+//                        e.getEventDate().isAfter(LocalDateTime.parse(rangeEnd, formatter)) && states.contains(e.getState().toString()))
+//                .toList();
+        if (users != null && categories != null) {
+            return eventRepository.findAllByInitiatorIdInAndCategoryIdIn(users, categories)
+                    .stream()
+                    .filter(e -> ((states != null) ? states.contains(e.getState().toString()) : true) &&
+                            ((rangeStart != null && rangeEnd != null)
+                                    ? e.getEventDate().isBefore(startDateTime) && e.getEventDate().isAfter(endDateTime)
+                                    : e.getEventDate().isAfter(LocalDateTime.now()))
+                    )
+                    .skip(from)
+                    .limit(size)
+                    .map(EventMapper::toEventFullDto)
+                    .toList();
+        } else if (users == null && categories != null) {
+            return eventRepository.findAllByCategoryIdIn(categories)
+                    .stream()
+                    .filter(e -> ((states != null) ? states.contains(e.getState().toString()) : true) &&
+                            ((rangeStart != null && rangeEnd != null)
+                                    ? e.getEventDate().isBefore(startDateTime) && e.getEventDate().isAfter(endDateTime)
+                                    : e.getEventDate().isAfter(LocalDateTime.now()))
+                    )
+                    .skip(from)
+                    .limit(size)
+                    .map(EventMapper::toEventFullDto)
+                    .toList();
+        } else if (users != null && categories == null) {
+            return eventRepository.findAllByInitiatorIdIn(users)
+                    .stream()
+                    .filter(e -> ((states != null) ? states.contains(e.getState().toString()) : true) &&
+                            ((rangeStart != null && rangeEnd != null)
+                                    ? e.getEventDate().isBefore(startDateTime) && e.getEventDate().isAfter(endDateTime)
+                                    : e.getEventDate().isAfter(LocalDateTime.now()))
+                    )
+                    .skip(from)
+                    .limit(size)
+                    .map(EventMapper::toEventFullDto)
+                    .toList();
+        } else {
+            return eventRepository.findAll()
+                    .stream()
+                    .filter(e -> ((states != null) ? states.contains(e.getState().toString()) : true) &&
+                            ((rangeStart != null && rangeEnd != null)
+                                    ? e.getEventDate().isBefore(startDateTime) && e.getEventDate().isAfter(endDateTime)
+                                    : e.getEventDate().isAfter(LocalDateTime.now()))
+                    )
+                    .skip(from)
+                    .limit(size)
+                    .map(EventMapper::toEventFullDto)
+                    .toList();
+        }
     }
 
     public List<EventFullDto> searchPublic(String text, List<Integer> categories, boolean paid, String rangeStart,
@@ -164,14 +231,23 @@ public class EventService {
                                 ? e.getEventDate().isBefore(startDateTime) && e.getEventDate().isAfter(endDateTime)
                                 : e.getEventDate().isAfter(LocalDateTime.now()))
                 )
-                .sorted(sort.equals("EVENT_DATE") ? Comparator.comparing(Event::getEventDate).reversed() : Comparator.comparing(Event::getViews).reversed())
+                //.sorted(sort.equals("EVENT_DATE") ? Comparator.comparing(Event::getEventDate).reversed() : Comparator.comparing(Event::getViews).reversed())
                 .skip(from)
                 .limit(size)
                 .collect(Collectors.toList());
 
+        if (sort != null) {
+            if (sort.equals("EVENT_DATE")) {
+                events.sort(Comparator.comparing(Event::getEventDate).reversed());
+            }
+            if (sort.equals("VIEWS")) {
+                events.sort(Comparator.comparing(Event::getViews).reversed());
+            }
+        }
         return events.stream()
                 .map(EventMapper::toEventFullDto)
                 .toList();
+
     }
 
     public EventFullDto findByIdPublic(int id) {
@@ -253,6 +329,7 @@ public class EventService {
             event.setEventDate(eventDate);
         }
         if (location != null) {
+            locationRepository.save(location);
             event.setLocation(location);
         }
         if (description != null) {

@@ -22,9 +22,9 @@ public class EventControllerPublic {
                                            @RequestParam(required = false) String rangeEnd,
                                            @RequestParam(required = false) boolean onlyAvailable,
                                            @RequestParam(required = false) String sort,
-                                           @RequestParam(required = false)
+                                           @RequestParam(defaultValue = "0")
                                            @PositiveOrZero Integer from,
-                                           @RequestParam(required = false)
+                                           @RequestParam(defaultValue = "10")
                                            @Positive Integer size) {
         return eventService.searchPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
 

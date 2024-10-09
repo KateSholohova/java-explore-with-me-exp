@@ -10,21 +10,9 @@ public class EventMapper {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public static Event fromNewEventDroToEvent(NewEventDto newEventDto) {
-        Event event = new Event();
-        event.setEventDate(LocalDateTime.parse(newEventDto.getEventDate(), formatter));
-        event.setAnnotation(newEventDto.getAnnotation());
-        event.setDescription(newEventDto.getDescription());
-        event.setTitle(newEventDto.getTitle());
-        event.setPaid(newEventDto.isPaid());
-        event.setRequestModeration(newEventDto.isRequestModeration());
-        event.setParticipantLimit(newEventDto.getParticipantLimit());
-        return event;
-    }
-
     public static EventFullDto toEventFullDto(Event event) {
         EventFullDto eventFullDto = new EventFullDto();
-        eventFullDto.setEventDate(event.getEventDate());
+        eventFullDto.setEventDate(event.getEventDate().format(formatter));
         eventFullDto.setAnnotation(event.getAnnotation());
         eventFullDto.setDescription(event.getDescription());
         eventFullDto.setConfirmedRequests(event.getConfirmedRequests());
@@ -32,8 +20,8 @@ public class EventMapper {
         eventFullDto.setPaid(event.getPaid());
         eventFullDto.setRequestModeration(event.getRequestModeration());
         eventFullDto.setParticipantLimit(event.getParticipantLimit());
-        eventFullDto.setCreatedOn(event.getCreatedOn());
-        eventFullDto.setPublishedOn(event.getPublishedOn());
+        eventFullDto.setCreatedOn(event.getCreatedOn().format(formatter));
+        eventFullDto.setPublishedOn(event.getPublishedOn().format(formatter));
         eventFullDto.setState(event.getState());
         eventFullDto.setId(event.getId());
         eventFullDto.setCategory(CategoryMapper.toCategoryDto(event.getCategory()));
@@ -42,6 +30,20 @@ public class EventMapper {
         eventFullDto.setViews(event.getViews());
         return eventFullDto;
     }
+
+
+    public static Event fromNewEventDroToEvent(NewEventDto newEventDto) {
+        Event event = new Event();
+        event.setEventDate(LocalDateTime.parse(newEventDto.getEventDate(), formatter));
+        event.setAnnotation(newEventDto.getAnnotation());
+        event.setDescription(newEventDto.getDescription());
+        event.setTitle(newEventDto.getTitle());
+        event.setPaid(newEventDto.getPaid());
+        event.setRequestModeration(newEventDto.getRequestModeration());
+        event.setParticipantLimit(newEventDto.getParticipantLimit());
+        return event;
+    }
+
 
     public static EventShortDto toEventShortDto(Event event) {
         EventShortDto eventShortDto = new EventShortDto();

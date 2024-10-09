@@ -1,10 +1,7 @@
 package ru.practicum.events;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import ru.practicum.categories.Category;
 import ru.practicum.events.location.Location;
@@ -20,10 +17,13 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @NotBlank
+    @Size(min = 20, max = 2000)
     private String annotation;
     @NotBlank
+    @Size(min = 3, max = 120)
     private String title;
     @NotBlank
+    @Size(min = 20, max = 7000)
     private String description;
     @NotNull
     @Future
