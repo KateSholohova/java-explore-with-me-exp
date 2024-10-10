@@ -35,7 +35,6 @@ CREATE TABLE IF NOT EXISTS events (
      annotation VARCHAR NOT NULL,
      title VARCHAR NOT NULL,
      confirmed_requests INTEGER,
-     views INTEGER,
      description VARCHAR NOT NULL,
      event_date TIMESTAMP WITHOUT TIME ZONE,
      created_on TIMESTAMP WITHOUT TIME ZONE,

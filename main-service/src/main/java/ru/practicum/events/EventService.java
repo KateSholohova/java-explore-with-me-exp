@@ -4,21 +4,23 @@ package ru.practicum.events;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import ru.practicum.StatClient;
+import ru.practicum.ViewStatsDto;
 import ru.practicum.categories.Category;
 import ru.practicum.categories.CategoryRepository;
 import ru.practicum.events.location.Location;
 import ru.practicum.events.location.LocationRepository;
 import ru.practicum.exceptions.ConflictException;
 import ru.practicum.exceptions.NotFoundException;
+import ru.practicum.exceptions.ValidationException;
 import ru.practicum.requests.*;
 import ru.practicum.users.User;
 import ru.practicum.users.UserRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -31,13 +33,14 @@ public class EventService {
     private final UserRepository userRepository;
     private final LocationRepository locationRepository;
     private final RequestRepository requestRepository;
+    private final StatClient statClient;
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public EventFullDto create(NewEventDto newEventDto, int userId) {
-        if (LocalDateTime.parse(newEventDto.getEventDate()).isBefore(LocalDateTime.now()) ||
-                LocalDateTime.parse(newEventDto.getEventDate()).equals(LocalDateTime.now())) {
-            throw new ConflictException("Date of event cannot be in the past");
+        if (LocalDateTime.parse(newEventDto.getEventDate(), formatter).isBefore(LocalDateTime.now()) ||
+                LocalDateTime.parse(newEventDto.getEventDate(), formatter).equals(LocalDateTime.now())) {
+            throw new ValidationException("Date of event cannot be in the past");
         }
         if (newEventDto.getPaid() == null) {
             newEventDto.setPaid(false);
@@ -218,7 +221,7 @@ public class EventService {
         LocalDateTime endDateTime = rangeEnd != null ? LocalDateTime.parse(rangeEnd, formatter) : null;
 
         if (categories != null) {
-            return eventRepository.findAllByCategoryIdIn(categories)
+            List<Event> eventFullDtoList = eventRepository.findAllByCategoryIdIn(categories)
                     .stream()
                     .filter(e -> e.getState().equals(State.PUBLISHED)
                             &&
@@ -238,10 +241,13 @@ public class EventService {
                     .sorted((sort != null && sort.equals("EVENT_DATE")) ? Comparator.comparing(Event::getEventDate).reversed() :
                             (sort != null && sort.equals("VIEWS")) ? Comparator.comparing(Event::getViews).reversed() :
                                     Comparator.comparing(Event::getEventDate))
+                    .toList();
+            setViews(eventFullDtoList);
+            return eventFullDtoList.stream()
                     .map(EventMapper::toEventFullDto)
                     .toList();
         } else {
-            return eventRepository.findAll()
+            List<Event> eventFullDtoList = eventRepository.findAll()
                     .stream()
                     .filter(e -> e.getState().equals(State.PUBLISHED)
                             &&
@@ -261,6 +267,9 @@ public class EventService {
                     .sorted((sort != null && sort.equals("EVENT_DATE")) ? Comparator.comparing(Event::getEventDate).reversed() :
                             (sort != null && sort.equals("VIEWS")) ? Comparator.comparing(Event::getViews).reversed() :
                                     Comparator.comparing(Event::getEventDate))
+                    .toList();
+            setViews(eventFullDtoList);
+            return eventFullDtoList.stream()
                     .map(EventMapper::toEventFullDto)
                     .toList();
         }
@@ -270,6 +279,7 @@ public class EventService {
         if (eventRepository.existsById(id)) {
             Event event = eventRepository.findById(id).get();
             if (event.getState().equals(State.PUBLISHED)) {
+                setViews(List.of(event));
                 return EventMapper.toEventFullDto(event);
             } else {
                 throw new NotFoundException("Event not found");
@@ -369,6 +379,28 @@ public class EventService {
         }
         eventRepository.save(event);
         return EventMapper.toEventFullDto(event);
+    }
+
+    private List<ViewStatsDto> getViewStats(List<Event> events) {
+        List<String> url = events.stream()
+                .map(event -> "/events/" + event.getId())
+                .toList();
+        Optional<List<ViewStatsDto>> viewStatsDto = Optional.ofNullable(statClient
+                .getStats(LocalDateTime.now().minusYears(20), LocalDateTime.now(), url, true).getBody()
+        );
+        return viewStatsDto.orElse(Collections.emptyList());
+    }
+
+    private void setViews(List<Event> events) {
+        if (CollectionUtils.isEmpty(events)) {
+            return;
+        }
+        Map<String, Long> mapUriAndHits = getViewStats(events).stream()
+                .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits));
+
+        for (Event event : events) {
+            event.setViews(event.getViews() + 1);
+        }
     }
 
 

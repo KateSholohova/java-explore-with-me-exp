@@ -22,6 +22,6 @@ public class EventFullDto {
     private UserShortDto initiator;
     private Location location;
     private int confirmedRequests;
-    private int views;
+    private long views;
 
 }

@@ -44,7 +44,8 @@ public class Event {
     @NotNull
     @Column(name = "participant_limit")
     private int participantLimit;
-    private int views;
+    @Transient
+    private long views;
     @Column(name = "status")
     @Enumerated(EnumType.ORDINAL)
     private State state;
