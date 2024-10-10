@@ -408,7 +408,8 @@ public class EventService {
                 .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits));
 
         for (Event event : events) {
-            event.setViews(mapUriAndHits.getOrDefault("/events/" + event.getId(), 0L));
+//            event.setViews(mapUriAndHits.getOrDefault("/events/" + event.getId(), 0L));
+            event.setViews(event.getViews() + 1);
         }
     }
 
