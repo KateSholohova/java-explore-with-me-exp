@@ -29,13 +29,19 @@ public class UserService {
     }
 
     public List<UserDto> findAll(int from, int size, List<Integer> ids) {
-        return userRepository.findAllByIdIn(ids).stream()
-                .map(UserMapper::toUserDto)
-                .skip(from)
-                .limit(size)
-                .collect(Collectors.toList());
-
-
+        if (ids != null && !ids.isEmpty()) {
+            return userRepository.findAllByIdIn(ids).stream()
+                    .map(UserMapper::toUserDto)
+                    .skip(from)
+                    .limit(size)
+                    .collect(Collectors.toList());
+        } else {
+            return userRepository.findAll().stream()
+                    .map(UserMapper::toUserDto)
+                    .skip(from)
+                    .limit(size)
+                    .collect(Collectors.toList());
+        }
     }
 
 }

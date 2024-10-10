@@ -7,5 +7,5 @@ import java.util.List;
 @Data
 public class EventRequestStatusUpdateRequest {
     private List<Integer> requestIds;
-    private Status status;
+    private RequestStatus status;
 }

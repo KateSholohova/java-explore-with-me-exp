@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.events.Event;
 import ru.practicum.events.EventRepository;
 import ru.practicum.events.State;
+import ru.practicum.exceptions.ConflictException;
 import ru.practicum.exceptions.NotFoundException;
 import ru.practicum.users.UserRepository;
 
@@ -24,7 +25,6 @@ public class RequestService {
     public RequestDto create(int userId, int eventId) {
         if (eventRepository.existsById(eventId) && userRepository.existsById(userId)) {
             Event event = eventRepository.findById(eventId).get();
-            log.info("PUB" + event.getState());
             if (event.getState().equals(State.PUBLISHED)) {
                 if (event.getInitiator().getId() != userId) {
                     if (event.getParticipantLimit() > event.getConfirmedRequests() ||
@@ -44,16 +44,16 @@ public class RequestService {
                             requestRepository.save(request);
                             return RequestMapper.toRequestDto(request);
                         } else {
-                            throw new RuntimeException("You already have a requester in this event");
+                            throw new ConflictException("You already have a requester in this event");
                         }
                     } else {
-                        throw new RuntimeException("Participant limit exceeded");
+                        throw new ConflictException("Participant limit exceeded");
                     }
                 } else {
-                    throw new RuntimeException("It is your event");
+                    throw new ConflictException("It is your event");
                 }
             } else {
-                throw new RuntimeException("Must be published");
+                throw new ConflictException("Must be published");
             }
         } else {
             throw new NotFoundException("Event or user not found");

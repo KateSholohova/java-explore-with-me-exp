@@ -1,5 +1,5 @@
 package ru.practicum.events;
 
-public enum Status {
+public enum RequestStatus {
     CONFIRMED, REJECTED
 }

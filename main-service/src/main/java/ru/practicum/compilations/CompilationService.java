@@ -34,27 +34,35 @@ public class CompilationService {
         }
     }
 
-    public CompilationDto update(int compId, NewCompilationDto newCompilationDto) {
+    public CompilationDto update(int compId, UpdateCompilationRequest updateCompilationRequest) {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundException("Compilation not found"));
         //Compilation newCompilation = CompilationMapper.toCompilation(newCompilationDto);
-        if (newCompilationDto.getPinned() != null) {
-            compilation.setPinned(newCompilationDto.getPinned());
+        if (updateCompilationRequest.getPinned() != null) {
+            compilation.setPinned(updateCompilationRequest.getPinned());
         }
-        if (newCompilationDto.getEvents() != null) {
-            compilation.setEvents(eventRepository.findAllByIdIn(newCompilationDto.getEvents()));
+        if (updateCompilationRequest.getEvents() != null) {
+            compilation.setEvents(eventRepository.findAllByIdIn(updateCompilationRequest.getEvents()));
         }
-        if (newCompilationDto.getTitle() != null) {
-            compilation.setTitle(newCompilationDto.getTitle());
+        if (updateCompilationRequest.getTitle() != null) {
+            compilation.setTitle(updateCompilationRequest.getTitle());
         }
         compilationRepository.save(compilation);
         return CompilationMapper.toCompilationDto(compilation);
     }
 
-    public List<CompilationDto> getAll(boolean pinned, int from, int size) {
-        List<Compilation> comps = compilationRepository.findAllByPinned(pinned).subList(from, from + size);
-        return comps.stream()
+    public List<CompilationDto> getAll(Boolean pinned, int from, int size) {
+        if (pinned != null) {
+            return compilationRepository.findAllByPinned(pinned).stream()
+                    .map(CompilationMapper::toCompilationDto)
+                    .skip(from)
+                    .limit(size)
+                    .toList();
+        }
+        return compilationRepository.findAll().stream()
                 .map(CompilationMapper::toCompilationDto)
+                .skip(from)
+                .limit(size)
                 .toList();
     }
 

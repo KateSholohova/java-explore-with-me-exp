@@ -10,8 +10,6 @@ import ru.practicum.events.location.Location;
 import ru.practicum.events.location.LocationRepository;
 import ru.practicum.exceptions.ConflictException;
 import ru.practicum.exceptions.NotFoundException;
-import ru.practicum.exceptions.ValidationException;
-import ru.practicum.requests.Status;
 import ru.practicum.requests.*;
 import ru.practicum.users.User;
 import ru.practicum.users.UserRepository;
@@ -37,6 +35,10 @@ public class EventService {
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public EventFullDto create(NewEventDto newEventDto, int userId) {
+        if (LocalDateTime.parse(newEventDto.getEventDate()).isBefore(LocalDateTime.now()) ||
+                LocalDateTime.parse(newEventDto.getEventDate()).equals(LocalDateTime.now())) {
+            throw new ConflictException("Date of event cannot be in the past");
+        }
         if (newEventDto.getPaid() == null) {
             newEventDto.setPaid(false);
         }
@@ -107,15 +109,14 @@ public class EventService {
                             event.setState(State.PENDING);
                         }
                     }
-                    return EventMapper.toEventFullDto(eventRepository.save(event));
-//                    return checkParameters(event, updateEventUserRequest.getParticipantLimit(),
-//                            LocalDateTime.parse(updateEventUserRequest.getEventDate(), formatter),
-//                            updateEventUserRequest.getLocation(),
-//                            updateEventUserRequest.getDescription(), updateEventUserRequest.getAnnotation(),
-//                            updateEventUserRequest.getTitle(), updateEventUserRequest.getCategory(),
-//                            updateEventUserRequest.getPaid(), updateEventUserRequest.getRequestModeration());
+                    return getEventFullDto(event, updateEventUserRequest.getParticipantLimit(),
+                            updateEventUserRequest.getEventDate(), updateEventUserRequest.getLocation(),
+                            updateEventUserRequest.getDescription(), updateEventUserRequest.getAnnotation(),
+                            updateEventUserRequest.getTitle(), updateEventUserRequest.getCategory(),
+                            updateEventUserRequest.getPaid(), updateEventUserRequest.getRequestModeration());
+
                 }
-                throw new ValidationException("Event must not be published");
+                throw new ConflictException("Event must not be published");
             } else {
                 throw new NotFoundException("Event not found");
             }
@@ -134,43 +135,35 @@ public class EventService {
                     event.setState(State.CANCELED);
                 } else if (updateEventAdminRequest.getStateAction().equals(StateActionAdmin.PUBLISH_EVENT) &&
                         event.getState().equals(State.PENDING)) {
-                    log.info("HEER");
                     event.setState(State.PUBLISHED);
                     eventRepository.save(event);
                 } else {
-                    log.info("WHY");
                     throw new ConflictException("Event must be pending");
                 }
             }
-            return EventMapper.toEventFullDto(event);
 
-//            return checkParameters(event, updateEventAdminRequest.getParticipantLimit(),
-//                    LocalDateTime.parse(updateEventAdminRequest.getEventDate(), formatter),
-//                    updateEventAdminRequest.getLocation(),
-//                    updateEventAdminRequest.getDescription(), updateEventAdminRequest.getAnnotation(),
-//                    updateEventAdminRequest.getTitle(), updateEventAdminRequest.getCategory(),
-//                    updateEventAdminRequest.getPaid(), updateEventAdminRequest.getRequestModeration());
-
+            return getEventFullDto(event, updateEventAdminRequest.getParticipantLimit(),
+                    updateEventAdminRequest.getEventDate(), updateEventAdminRequest.getLocation(),
+                    updateEventAdminRequest.getDescription(), updateEventAdminRequest.getAnnotation(),
+                    updateEventAdminRequest.getTitle(), updateEventAdminRequest.getCategory(),
+                    updateEventAdminRequest.getPaid(), updateEventAdminRequest.getRequestModeration());
         } else {
             throw new NotFoundException("Event not found");
         }
     }
 
+
     public List<EventFullDto> searchAdmin(List<Integer> users, List<String> states, List<Integer> categories,
                                           String rangeEnd, String rangeStart, int from, int size) {
         LocalDateTime startDateTime = rangeStart != null ? LocalDateTime.parse(rangeStart, formatter) : null;
         LocalDateTime endDateTime = rangeEnd != null ? LocalDateTime.parse(rangeEnd, formatter) : null;
-
-//        List<Event> events = eventRepository.findAllByInitiatorIdInAndCategoryIdIn(users, categories).stream()
-//                .filter(e -> e.getEventDate().isBefore(LocalDateTime.parse(rangeStart, formatter)) &&
-//                        e.getEventDate().isAfter(LocalDateTime.parse(rangeEnd, formatter)) && states.contains(e.getState().toString()))
-//                .toList();
         if (users != null && categories != null) {
             return eventRepository.findAllByInitiatorIdInAndCategoryIdIn(users, categories)
                     .stream()
-                    .filter(e -> ((states != null) ? states.contains(e.getState().toString()) : true) &&
-                            ((rangeStart != null && rangeEnd != null)
-                                    ? e.getEventDate().isBefore(startDateTime) && e.getEventDate().isAfter(endDateTime)
+                    .filter(e -> ((states != null) ? states.contains(e.getState().toString()) : true)
+                            &&
+                            ((startDateTime != null && endDateTime != null)
+                                    ? e.getEventDate().isAfter(startDateTime) && e.getEventDate().isBefore(endDateTime)
                                     : e.getEventDate().isAfter(LocalDateTime.now()))
                     )
                     .skip(from)
@@ -180,9 +173,10 @@ public class EventService {
         } else if (users == null && categories != null) {
             return eventRepository.findAllByCategoryIdIn(categories)
                     .stream()
-                    .filter(e -> ((states != null) ? states.contains(e.getState().toString()) : true) &&
-                            ((rangeStart != null && rangeEnd != null)
-                                    ? e.getEventDate().isBefore(startDateTime) && e.getEventDate().isAfter(endDateTime)
+                    .filter(e -> ((states != null) ? states.contains(e.getState().toString()) : true)
+                            &&
+                            ((startDateTime != null && endDateTime != null)
+                                    ? e.getEventDate().isAfter(startDateTime) && e.getEventDate().isBefore(endDateTime)
                                     : e.getEventDate().isAfter(LocalDateTime.now()))
                     )
                     .skip(from)
@@ -192,9 +186,10 @@ public class EventService {
         } else if (users != null && categories == null) {
             return eventRepository.findAllByInitiatorIdIn(users)
                     .stream()
-                    .filter(e -> ((states != null) ? states.contains(e.getState().toString()) : true) &&
-                            ((rangeStart != null && rangeEnd != null)
-                                    ? e.getEventDate().isBefore(startDateTime) && e.getEventDate().isAfter(endDateTime)
+                    .filter(e -> ((states != null) ? states.contains(e.getState().toString()) : true)
+                            &&
+                            ((startDateTime != null && endDateTime != null)
+                                    ? e.getEventDate().isAfter(startDateTime) && e.getEventDate().isBefore(endDateTime)
                                     : e.getEventDate().isAfter(LocalDateTime.now()))
                     )
                     .skip(from)
@@ -204,9 +199,10 @@ public class EventService {
         } else {
             return eventRepository.findAll()
                     .stream()
-                    .filter(e -> ((states != null) ? states.contains(e.getState().toString()) : true) &&
-                            ((rangeStart != null && rangeEnd != null)
-                                    ? e.getEventDate().isBefore(startDateTime) && e.getEventDate().isAfter(endDateTime)
+                    .filter(e -> ((states != null) ? states.contains(e.getState().toString()) : true)
+                            &&
+                            ((startDateTime != null && endDateTime != null)
+                                    ? e.getEventDate().isAfter(startDateTime) && e.getEventDate().isBefore(endDateTime)
                                     : e.getEventDate().isAfter(LocalDateTime.now()))
                     )
                     .skip(from)
@@ -216,39 +212,58 @@ public class EventService {
         }
     }
 
-    public List<EventFullDto> searchPublic(String text, List<Integer> categories, boolean paid, String rangeStart,
-                                           String rangeEnd, boolean onlyAvailable, String sort, int from, int size) {
+    public List<EventFullDto> searchPublic(String text, List<Integer> categories, Boolean paid, String rangeStart,
+                                           String rangeEnd, Boolean onlyAvailable, String sort, int from, int size) {
         LocalDateTime startDateTime = rangeStart != null ? LocalDateTime.parse(rangeStart, formatter) : null;
         LocalDateTime endDateTime = rangeEnd != null ? LocalDateTime.parse(rangeEnd, formatter) : null;
 
-        List<Event> events = eventRepository.findAllByCategoryIdIn(categories)
-                .stream()
-                .filter(e -> e.getState().equals(State.PUBLISHED) &&
-                        (e.getAnnotation().toLowerCase().contains(text.toLowerCase()) ||
-                                e.getDescription().toLowerCase().contains(text.toLowerCase())) &&
-                        e.getPaid().equals(paid) &&
-                        (onlyAvailable ? e.getParticipantLimit() >= e.getConfirmedRequests() : true) &&
-                        ((rangeStart != null && rangeEnd != null)
-                                ? e.getEventDate().isBefore(startDateTime) && e.getEventDate().isAfter(endDateTime)
-                                : e.getEventDate().isAfter(LocalDateTime.now()))
-                )
-                //.sorted(sort.equals("EVENT_DATE") ? Comparator.comparing(Event::getEventDate).reversed() : Comparator.comparing(Event::getViews).reversed())
-                .skip(from)
-                .limit(size)
-                .collect(Collectors.toList());
-
-        if (sort != null) {
-            if (sort.equals("EVENT_DATE")) {
-                events.sort(Comparator.comparing(Event::getEventDate).reversed());
-            }
-            if (sort.equals("VIEWS")) {
-                events.sort(Comparator.comparing(Event::getViews).reversed());
-            }
+        if (categories != null) {
+            return eventRepository.findAllByCategoryIdIn(categories)
+                    .stream()
+                    .filter(e -> e.getState().equals(State.PUBLISHED)
+                            &&
+                            ((text != null) ? (e.getAnnotation().toLowerCase().contains(text.toLowerCase()) ||
+                                    e.getDescription().toLowerCase().contains(text.toLowerCase())) : true)
+                            &&
+                            ((paid != null) ? e.getPaid().equals(paid) : true)
+                            &&
+                            ((onlyAvailable != null) ? (onlyAvailable ? e.getParticipantLimit() >= e.getConfirmedRequests() : true) : true)
+                            &&
+                            ((startDateTime != null && endDateTime != null)
+                                    ? e.getEventDate().isAfter(startDateTime) && e.getEventDate().isBefore(endDateTime)
+                                    : e.getEventDate().isAfter(LocalDateTime.now()))
+                    )
+                    .skip(from)
+                    .limit(size)
+                    .sorted((sort != null && sort.equals("EVENT_DATE")) ? Comparator.comparing(Event::getEventDate).reversed() :
+                            (sort != null && sort.equals("VIEWS")) ? Comparator.comparing(Event::getViews).reversed() :
+                                    Comparator.comparing(Event::getEventDate))
+                    .map(EventMapper::toEventFullDto)
+                    .toList();
+        } else {
+            return eventRepository.findAll()
+                    .stream()
+                    .filter(e -> e.getState().equals(State.PUBLISHED)
+                            &&
+                            ((text != null) ? (e.getAnnotation().toLowerCase().contains(text.toLowerCase()) ||
+                                    e.getDescription().toLowerCase().contains(text.toLowerCase())) : true)
+                            &&
+                            ((paid != null) ? e.getPaid().equals(paid) : true)
+                            &&
+                            ((onlyAvailable != null) ? (onlyAvailable ? e.getParticipantLimit() >= e.getConfirmedRequests() : true) : true)
+                            &&
+                            ((startDateTime != null && endDateTime != null)
+                                    ? e.getEventDate().isAfter(startDateTime) && e.getEventDate().isBefore(endDateTime)
+                                    : e.getEventDate().isAfter(LocalDateTime.now()))
+                    )
+                    .skip(from)
+                    .limit(size)
+                    .sorted((sort != null && sort.equals("EVENT_DATE")) ? Comparator.comparing(Event::getEventDate).reversed() :
+                            (sort != null && sort.equals("VIEWS")) ? Comparator.comparing(Event::getViews).reversed() :
+                                    Comparator.comparing(Event::getEventDate))
+                    .map(EventMapper::toEventFullDto)
+                    .toList();
         }
-        return events.stream()
-                .map(EventMapper::toEventFullDto)
-                .toList();
-
     }
 
     public EventFullDto findByIdPublic(int id) {
@@ -276,30 +291,33 @@ public class EventService {
 
         if (eventRepository.existsById(eventId)) {
             Event event = eventRepository.findById(eventId).get();
-            if (event.getParticipantLimit() < event.getConfirmedRequests()) {
+            if (event.getParticipantLimit() > event.getConfirmedRequests()) {
                 List<Request> requests = requestRepository.findAllByIdIn(eventRequestStatusUpdateRequest.getRequestIds());
                 List<Request> rejectedRequests = new ArrayList<>();
                 List<Request> acceptedRequests = new ArrayList<>();
                 for (Request request : requests) {
                     if (request.getStatus().equals(Status.PENDING)) {
-                        if (eventRequestStatusUpdateRequest.getStatus().equals(ru.practicum.events.Status.CONFIRMED)) {
-                            if (event.getParticipantLimit() < event.getConfirmedRequests()) {
+                        if (eventRequestStatusUpdateRequest.getStatus().equals(RequestStatus.CONFIRMED)) {
+                            if (event.getParticipantLimit() > event.getConfirmedRequests()) {
                                 request.setStatus(Status.CONFIRMED);
                                 acceptedRequests.add(request);
                                 requestRepository.save(request);
                                 event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+                                eventRepository.save(event);
                             } else {
-                                request.setStatus(Status.CANCELED);
+                                request.setStatus(Status.REJECTED);
                                 rejectedRequests.add(request);
                                 requestRepository.save(request);
                             }
+
                         } else {
-                            request.setStatus(Status.CANCELED);
-                            acceptedRequests.add(request);
+                            request.setStatus(Status.REJECTED);
+                            rejectedRequests.add(request);
                             requestRepository.save(request);
                         }
+
                     } else {
-                        throw new RuntimeException("Request status must be PENDING");
+                        throw new ConflictException("Request status must be PENDING");
                     }
                 }
 
@@ -313,21 +331,19 @@ public class EventService {
                 return updateResult;
 
             } else {
-                throw new ValidationException("Participant limit exceeded");
+                throw new ConflictException("Participant limit exceeded");
             }
         } else {
             throw new NotFoundException("Event not found");
         }
     }
 
-    private EventFullDto checkParameters(Event event, int participantLimit, LocalDateTime eventDate, Location location,
-                                         String description, String annotation, String title, int category,
-                                         Boolean paid, Boolean requestModeration) {
+    private EventFullDto getEventFullDto(Event event, int participantLimit, String eventDate, Location location, String description, String annotation, String title, int category, Boolean paid, Boolean requestModeration) {
         if (participantLimit != 0) {
             event.setParticipantLimit(participantLimit);
         }
         if (eventDate != null) {
-            event.setEventDate(eventDate);
+            event.setEventDate(LocalDateTime.parse(eventDate, formatter));
         }
         if (location != null) {
             locationRepository.save(location);

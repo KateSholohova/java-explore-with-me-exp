@@ -32,6 +32,10 @@ public class CategoryService {
     public CategoryDto update(NewCategoryDto newCategoryDto, int categoryId) {
         if (categoryRepository.existsById(categoryId)) {
             if (categoryRepository.existsByName(newCategoryDto.getName())) {
+                Category category = categoryRepository.findByName(newCategoryDto.getName());
+                if (category.getId() == categoryId) {
+                    return CategoryMapper.toCategoryDto(category);
+                }
                 throw new ConflictException("Category name already exists");
             } else {
                 Category category = CategoryMapper.fromNewCategoryDtoToCategory(newCategoryDto);
