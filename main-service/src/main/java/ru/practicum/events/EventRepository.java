@@ -8,8 +8,6 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
 
     List<Event> findAllByInitiatorId(int id);
 
-    Event findEventByIdAndInitiatorId(int eventId, int initiatorId);
-
     boolean existsByIdAndInitiatorId(int eventId, int initiatorId);
 
     List<Event> findAllByInitiatorIdInAndCategoryIdIn(List<Integer> initiatorIds, List<Integer> categoryIds);

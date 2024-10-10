@@ -21,10 +21,10 @@ public class EventControllerPublic {
     @GetMapping
     public List<EventFullDto> searchPublic(@RequestParam(required = false) String text,
                                            @RequestParam(required = false) List<Integer> categories,
-                                           @RequestParam(required = false) boolean paid,
+                                           @RequestParam(required = false) Boolean paid,
                                            @RequestParam(required = false) String rangeStart,
                                            @RequestParam(required = false) String rangeEnd,
-                                           @RequestParam(required = false) boolean onlyAvailable,
+                                           @RequestParam(required = false) Boolean onlyAvailable,
                                            @RequestParam(required = false) String sort,
                                            @RequestParam(defaultValue = "0")
                                            @PositiveOrZero Integer from,

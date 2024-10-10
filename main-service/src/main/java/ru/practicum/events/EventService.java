@@ -160,6 +160,11 @@ public class EventService {
                                           String rangeEnd, String rangeStart, int from, int size) {
         LocalDateTime startDateTime = rangeStart != null ? LocalDateTime.parse(rangeStart, formatter) : null;
         LocalDateTime endDateTime = rangeEnd != null ? LocalDateTime.parse(rangeEnd, formatter) : null;
+        if (endDateTime != null && startDateTime != null) {
+            if (startDateTime.isAfter(endDateTime)) {
+                throw new ValidationException("Start time must be before end time");
+            }
+        }
         if (users != null && categories != null) {
             return eventRepository.findAllByInitiatorIdInAndCategoryIdIn(users, categories)
                     .stream()
@@ -219,7 +224,11 @@ public class EventService {
                                            String rangeEnd, Boolean onlyAvailable, String sort, int from, int size) {
         LocalDateTime startDateTime = rangeStart != null ? LocalDateTime.parse(rangeStart, formatter) : null;
         LocalDateTime endDateTime = rangeEnd != null ? LocalDateTime.parse(rangeEnd, formatter) : null;
-
+        if (endDateTime != null && startDateTime != null) {
+            if (startDateTime.isAfter(endDateTime)) {
+                throw new ValidationException("Start time must be before end time");
+            }
+        }
         if (categories != null) {
             List<Event> eventFullDtoList = eventRepository.findAllByCategoryIdIn(categories)
                     .stream()
@@ -386,7 +395,7 @@ public class EventService {
                 .map(event -> "/events/" + event.getId())
                 .toList();
         Optional<List<ViewStatsDto>> viewStatsDto = Optional.ofNullable(statClient
-                .getStats(LocalDateTime.now().minusYears(20), LocalDateTime.now(), url, true).getBody()
+                .getStats(LocalDateTime.now().minusYears(20), LocalDateTime.now(), url, true)
         );
         return viewStatsDto.orElse(Collections.emptyList());
     }
@@ -399,7 +408,7 @@ public class EventService {
                 .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits));
 
         for (Event event : events) {
-            event.setViews(event.getViews() + 1);
+            event.setViews(mapUriAndHits.getOrDefault("/events/" + event.getId(), 0L));
         }
     }
 
