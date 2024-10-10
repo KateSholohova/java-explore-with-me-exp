@@ -64,14 +64,11 @@ public class EventService {
 
     public List<EventFullDto> findAllByInitiatorId(int from, int size, int userId) {
         if (userRepository.existsById(userId)) {
-            List<EventFullDto> eventFullDtoList = eventRepository.findAllByInitiatorId(userId).stream()
+            return eventRepository.findAllByInitiatorId(userId).stream()
                     .map(EventMapper::toEventFullDto)
+                    .skip(from)
+                    .limit(size)
                     .collect(Collectors.toList());
-            if (size > eventFullDtoList.size() - from) {
-                return eventFullDtoList.subList(from, eventFullDtoList.getLast().getId());
-            } else {
-                return eventFullDtoList.subList(from, from + size);
-            }
 
         } else {
             throw new NotFoundException("User not found");
@@ -80,15 +77,14 @@ public class EventService {
 
     public EventFullDto findEventByInitiatorId(int userId, int eventId) {
         if (userRepository.existsById(userId)) {
-//            List<EventFullDto> eventFullDtoList= eventRepository.findAllByInitiatorId(userId).stream()
-//                    .map(EventMapper::toEventFullDto)
-//                    .toList();
-//            return eventFullDtoList.stream()
-//                    .filter(e -> e.getId() == eventId)
-//                    .findFirst()
-//                    .orElseThrow(() -> new NotFoundException("Event not found"));
-            if (eventRepository.existsByIdAndInitiatorId(userId, eventId)) {
-                return EventMapper.toEventFullDto(eventRepository.findEventByIdAndInitiatorId(userId, eventId));
+            if (eventRepository.existsById(eventId)) {
+                Event event = eventRepository.findById(eventId).get();
+                if (event.getInitiator().getId() == userId) {
+                    return EventMapper.toEventFullDto(event);
+                } else {
+                    throw new NotFoundException("Event not found");
+                }
+
             } else {
                 throw new NotFoundException("Event not found");
             }
@@ -111,12 +107,13 @@ public class EventService {
                             event.setState(State.PENDING);
                         }
                     }
-                    return checkParameters(event, updateEventUserRequest.getParticipantLimit(),
-                            LocalDateTime.parse(updateEventUserRequest.getEventDate(), formatter),
-                            updateEventUserRequest.getLocation(),
-                            updateEventUserRequest.getDescription(), updateEventUserRequest.getAnnotation(),
-                            updateEventUserRequest.getTitle(), updateEventUserRequest.getCategory(),
-                            updateEventUserRequest.getPaid(), updateEventUserRequest.getRequestModeration());
+                    return EventMapper.toEventFullDto(eventRepository.save(event));
+//                    return checkParameters(event, updateEventUserRequest.getParticipantLimit(),
+//                            LocalDateTime.parse(updateEventUserRequest.getEventDate(), formatter),
+//                            updateEventUserRequest.getLocation(),
+//                            updateEventUserRequest.getDescription(), updateEventUserRequest.getAnnotation(),
+//                            updateEventUserRequest.getTitle(), updateEventUserRequest.getCategory(),
+//                            updateEventUserRequest.getPaid(), updateEventUserRequest.getRequestModeration());
                 }
                 throw new ValidationException("Event must not be published");
             } else {
@@ -131,24 +128,32 @@ public class EventService {
 
         if (eventRepository.existsById(eventId)) {
             Event event = eventRepository.findById(eventId).get();
+            log.info("event: " + event);
+            log.info("updateAdminRequest: " + updateEventAdminRequest);
             if (updateEventAdminRequest.getStateAction() != null) {
-                if (updateEventAdminRequest.getStateAction().equals(StateActionAdmin.REJECT_EVENT) &&
-                        !event.getState().equals(State.PUBLISHED)) {
-                    event.setState(State.CANCELED);
-                } else if (updateEventAdminRequest.getStateAction() == StateActionAdmin.PUBLISH_EVENT &&
-                        event.getState() == State.PENDING) {
+//                if (updateEventAdminRequest.getStateAction().equals(StateActionAdmin.REJECT_EVENT) &&
+//                        !event.getState().equals(State.PUBLISHED)) {
+//                    event.setState(State.CANCELED);
+//                } else
+                log.info("StateAction: " + updateEventAdminRequest.getStateAction().equals(StateActionAdmin.PUBLISH_EVENT));
+                log.info("State" + event.getState().equals(State.PENDING));
+                if (updateEventAdminRequest.getStateAction().equals(StateActionAdmin.PUBLISH_EVENT) &&
+                        event.getState().equals(State.PENDING)) {
+                    log.info("HEER");
                     event.setState(State.PUBLISHED);
                 } else {
+                    log.info("WHY");
                     throw new ConflictException("Event must be pending");
                 }
             }
+            return EventMapper.toEventFullDto(event);
 
-            return checkParameters(event, updateEventAdminRequest.getParticipantLimit(),
-                    LocalDateTime.parse(updateEventAdminRequest.getEventDate(), formatter),
-                    updateEventAdminRequest.getLocation(),
-                    updateEventAdminRequest.getDescription(), updateEventAdminRequest.getAnnotation(),
-                    updateEventAdminRequest.getTitle(), updateEventAdminRequest.getCategory(),
-                    updateEventAdminRequest.getPaid(), updateEventAdminRequest.getRequestModeration());
+//            return checkParameters(event, updateEventAdminRequest.getParticipantLimit(),
+//                    LocalDateTime.parse(updateEventAdminRequest.getEventDate(), formatter),
+//                    updateEventAdminRequest.getLocation(),
+//                    updateEventAdminRequest.getDescription(), updateEventAdminRequest.getAnnotation(),
+//                    updateEventAdminRequest.getTitle(), updateEventAdminRequest.getCategory(),
+//                    updateEventAdminRequest.getPaid(), updateEventAdminRequest.getRequestModeration());
 
         } else {
             throw new NotFoundException("Event not found");
