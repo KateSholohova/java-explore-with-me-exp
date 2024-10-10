@@ -24,11 +24,12 @@ public class RequestService {
     public RequestDto create(int userId, int eventId) {
         if (eventRepository.existsById(eventId) && userRepository.existsById(userId)) {
             Event event = eventRepository.findById(eventId).get();
+            log.info("PUB" + event.getState());
             if (event.getState().equals(State.PUBLISHED)) {
                 if (event.getInitiator().getId() != userId) {
                     if (event.getParticipantLimit() > event.getConfirmedRequests() ||
                             event.getParticipantLimit() == 0) {
-                        if (requestRepository.existsByRequesterIdAndEventId(userId, eventId)) {
+                        if (!requestRepository.existsByRequesterIdAndEventId(userId, eventId)) {
                             Request request = new Request();
                             request.setCreated(LocalDateTime.now());
                             if (event.getRequestModeration() && event.getParticipantLimit() != 0) {

@@ -128,19 +128,15 @@ public class EventService {
 
         if (eventRepository.existsById(eventId)) {
             Event event = eventRepository.findById(eventId).get();
-            log.info("event: " + event);
-            log.info("updateAdminRequest: " + updateEventAdminRequest);
             if (updateEventAdminRequest.getStateAction() != null) {
-//                if (updateEventAdminRequest.getStateAction().equals(StateActionAdmin.REJECT_EVENT) &&
-//                        !event.getState().equals(State.PUBLISHED)) {
-//                    event.setState(State.CANCELED);
-//                } else
-                log.info("StateAction: " + updateEventAdminRequest.getStateAction().equals(StateActionAdmin.PUBLISH_EVENT));
-                log.info("State" + event.getState().equals(State.PENDING));
-                if (updateEventAdminRequest.getStateAction().equals(StateActionAdmin.PUBLISH_EVENT) &&
+                if (updateEventAdminRequest.getStateAction().equals(StateActionAdmin.REJECT_EVENT) &&
+                        !event.getState().equals(State.PUBLISHED)) {
+                    event.setState(State.CANCELED);
+                } else if (updateEventAdminRequest.getStateAction().equals(StateActionAdmin.PUBLISH_EVENT) &&
                         event.getState().equals(State.PENDING)) {
                     log.info("HEER");
                     event.setState(State.PUBLISHED);
+                    eventRepository.save(event);
                 } else {
                     log.info("WHY");
                     throw new ConflictException("Event must be pending");
