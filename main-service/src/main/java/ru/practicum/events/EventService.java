@@ -397,43 +397,18 @@ public class EventService {
     }
 
     private void setEventViews(Event event, HttpServletRequest request) {
-        // Получение статистики просмотров для URI этого события
         String eventUri = request.getRequestURI();
-        LocalDateTime start = LocalDateTime.of(2020, 1, 1, 0, 0); // произвольная дата начала
-        LocalDateTime end = LocalDateTime.now(); // текущая дата
+        LocalDateTime start = LocalDateTime.of(2020, 1, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.now();
 
         List<ViewStatsDto> stats = statClient.getStats(start, end, List.of(eventUri), true);
 
-        // Если статистика получена, обновляем поле views
         if (!stats.isEmpty()) {
             event.setViews(stats.get(0).getHits());
+            event.setViews(event.getViews() + 1);
         } else {
-            event.setViews(0L); // если статистика пуста, устанавливаем 0 просмотров
+            event.setViews(0L);
         }
     }
-
-//    private List<ViewStatsDto> getViewStats(List<Event> events) {
-//        List<String> url = events.stream()
-//                .map(event -> "/events/" + event.getId())
-//                .toList();
-//        Optional<List<ViewStatsDto>> viewStatsDto = Optional.ofNullable(statClient
-//                .getStats(LocalDateTime.now().minusYears(20), LocalDateTime.now(), url, true)
-//        );
-//        return viewStatsDto.orElse(Collections.emptyList());
-//    }
-//
-//    private void setViews(List<Event> events) {
-//        if (CollectionUtils.isEmpty(events)) {
-//            return;
-//        }
-//        Map<String, Long> mapUriAndHits = getViewStats(events).stream()
-//                .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits));
-//
-//        for (Event event : events) {
-//            event.setViews(mapUriAndHits.getOrDefault("/events/" + event.getId(), 0L));
-//            //event.setViews(event.getViews() + 1);
-//        }
-//    }
-
 
 }
