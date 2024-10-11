@@ -402,10 +402,11 @@ public class EventService {
         LocalDateTime end = LocalDateTime.now();
 
         List<ViewStatsDto> stats = statClient.getStats(start, end, List.of(eventUri), true);
-
+        event.setViews(stats.get(0).getHits());
+        log.info("VIEWS" + event.getViews());
+        event.setViews(event.getViews() + 1);
         if (!stats.isEmpty()) {
-            event.setViews(stats.get(0).getHits());
-            event.setViews(event.getViews() + 1);
+
         } else {
             event.setViews(0L);
         }
