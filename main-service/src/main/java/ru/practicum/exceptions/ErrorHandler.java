@@ -36,10 +36,4 @@ public class ErrorHandler {
 
         return new ErrorResponse("Исключения", e.getMessage());
     }
-
-//    @ExceptionHandler(SameEmailException.class)
-//    @ResponseStatus(HttpStatus.CONFLICT)
-//    public ErrorResponse handleSameEmailException(final SameEmailException e) {
-//        return new ErrorResponse("Пользователь с таким email уже существует ", e.getMessage());
-//    }
 }

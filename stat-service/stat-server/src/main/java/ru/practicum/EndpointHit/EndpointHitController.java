@@ -18,7 +18,7 @@ public class EndpointHitController {
     private final EndpointHitMapper endpointHitMapper;
     private final ViewStatsMapper viewStatsMapper;
 
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("hit")
     public void save(@Valid @RequestBody EndpointHitDto endpointHitDto) {
         endpointHitService.save(endpointHitDto);
