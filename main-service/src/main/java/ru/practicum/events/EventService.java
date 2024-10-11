@@ -403,13 +403,8 @@ public class EventService {
 
         List<ViewStatsDto> stats = statClient.getStats(start, end, List.of(eventUri), true);
         event.setViews(stats.get(0).getHits());
-        log.info("VIEWS" + event.getViews());
         event.setViews(event.getViews() + 1);
-        if (!stats.isEmpty()) {
 
-        } else {
-            event.setViews(0L);
-        }
     }
 
 }
