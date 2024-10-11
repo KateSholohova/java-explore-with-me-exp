@@ -1,10 +1,10 @@
 package ru.practicum.events;
 
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import ru.practicum.StatClient;
 import ru.practicum.ViewStatsDto;
 import ru.practicum.categories.Category;
@@ -20,7 +20,9 @@ import ru.practicum.users.UserRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -221,7 +223,7 @@ public class EventService {
     }
 
     public List<EventFullDto> searchPublic(String text, List<Integer> categories, Boolean paid, String rangeStart,
-                                           String rangeEnd, Boolean onlyAvailable, String sort, int from, int size) {
+                                           String rangeEnd, Boolean onlyAvailable, String sort, int from, int size, HttpServletRequest request) {
         LocalDateTime startDateTime = rangeStart != null ? LocalDateTime.parse(rangeStart, formatter) : null;
         LocalDateTime endDateTime = rangeEnd != null ? LocalDateTime.parse(rangeEnd, formatter) : null;
         if (endDateTime != null && startDateTime != null) {
@@ -251,7 +253,9 @@ public class EventService {
                             (sort != null && sort.equals("VIEWS")) ? Comparator.comparing(Event::getViews).reversed() :
                                     Comparator.comparing(Event::getEventDate))
                     .toList();
-            setViews(eventFullDtoList);
+
+            eventFullDtoList.forEach(e -> setEventViews(e, request));
+
             return eventFullDtoList.stream()
                     .map(EventMapper::toEventFullDto)
                     .toList();
@@ -277,18 +281,20 @@ public class EventService {
                             (sort != null && sort.equals("VIEWS")) ? Comparator.comparing(Event::getViews).reversed() :
                                     Comparator.comparing(Event::getEventDate))
                     .toList();
-            setViews(eventFullDtoList);
+
+            eventFullDtoList.forEach(e -> setEventViews(e, request));
+
             return eventFullDtoList.stream()
                     .map(EventMapper::toEventFullDto)
                     .toList();
         }
     }
 
-    public EventFullDto findByIdPublic(int id) {
+    public EventFullDto findByIdPublic(int id, HttpServletRequest request) {
         if (eventRepository.existsById(id)) {
             Event event = eventRepository.findById(id).get();
             if (event.getState().equals(State.PUBLISHED)) {
-                setViews(List.of(event));
+                setEventViews(event, request);
                 return EventMapper.toEventFullDto(event);
             } else {
                 throw new NotFoundException("Event not found");
@@ -390,28 +396,44 @@ public class EventService {
         return EventMapper.toEventFullDto(event);
     }
 
-    private List<ViewStatsDto> getViewStats(List<Event> events) {
-        List<String> url = events.stream()
-                .map(event -> "/events/" + event.getId())
-                .toList();
-        Optional<List<ViewStatsDto>> viewStatsDto = Optional.ofNullable(statClient
-                .getStats(LocalDateTime.now().minusYears(20), LocalDateTime.now(), url, true)
-        );
-        return viewStatsDto.orElse(Collections.emptyList());
-    }
+    private void setEventViews(Event event, HttpServletRequest request) {
+        // Получение статистики просмотров для URI этого события
+        String eventUri = request.getRequestURI();
+        LocalDateTime start = LocalDateTime.of(2020, 1, 1, 0, 0); // произвольная дата начала
+        LocalDateTime end = LocalDateTime.now(); // текущая дата
 
-    private void setViews(List<Event> events) {
-        if (CollectionUtils.isEmpty(events)) {
-            return;
-        }
-        Map<String, Long> mapUriAndHits = getViewStats(events).stream()
-                .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits));
+        List<ViewStatsDto> stats = statClient.getStats(start, end, List.of(eventUri), true);
 
-        for (Event event : events) {
-            //event.setViews(mapUriAndHits.getOrDefault("/events/" + event.getId(), 0L));
-            event.setViews(event.getViews() + 1);
+        // Если статистика получена, обновляем поле views
+        if (!stats.isEmpty()) {
+            event.setViews(stats.get(0).getHits());
+        } else {
+            event.setViews(0L); // если статистика пуста, устанавливаем 0 просмотров
         }
     }
+
+//    private List<ViewStatsDto> getViewStats(List<Event> events) {
+//        List<String> url = events.stream()
+//                .map(event -> "/events/" + event.getId())
+//                .toList();
+//        Optional<List<ViewStatsDto>> viewStatsDto = Optional.ofNullable(statClient
+//                .getStats(LocalDateTime.now().minusYears(20), LocalDateTime.now(), url, true)
+//        );
+//        return viewStatsDto.orElse(Collections.emptyList());
+//    }
+//
+//    private void setViews(List<Event> events) {
+//        if (CollectionUtils.isEmpty(events)) {
+//            return;
+//        }
+//        Map<String, Long> mapUriAndHits = getViewStats(events).stream()
+//                .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits));
+//
+//        for (Event event : events) {
+//            event.setViews(mapUriAndHits.getOrDefault("/events/" + event.getId(), 0L));
+//            //event.setViews(event.getViews() + 1);
+//        }
+//    }
 
 
 }

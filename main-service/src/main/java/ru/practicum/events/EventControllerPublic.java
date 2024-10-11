@@ -32,7 +32,7 @@ public class EventControllerPublic {
                                            @Positive Integer size,
                                            HttpServletRequest request) {
         statClient.saveHit(appConfig.getAppName(), request);
-        return eventService.searchPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
+        return eventService.searchPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size, request);
 
     }
 
@@ -40,6 +40,6 @@ public class EventControllerPublic {
     public EventFullDto findByIdPublic(@PathVariable Integer id,
                                        HttpServletRequest request) {
         statClient.saveHit(appConfig.getAppName(), request);
-        return eventService.findByIdPublic(id);
+        return eventService.findByIdPublic(id, request);
     }
 }
