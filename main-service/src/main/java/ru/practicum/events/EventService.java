@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.StatClient;
-import ru.practicum.ViewStatsDto;
 import ru.practicum.categories.Category;
 import ru.practicum.categories.CategoryRepository;
 import ru.practicum.events.location.Location;
@@ -254,7 +253,10 @@ public class EventService {
                                     Comparator.comparing(Event::getEventDate))
                     .toList();
 
-            eventFullDtoList.forEach(e -> setEventViews(e, request));
+            for (Event e : eventFullDtoList) {
+                e.setViews(e.getViews() + 1);
+                eventRepository.save(e);
+            }
 
             return eventFullDtoList.stream()
                     .map(EventMapper::toEventFullDto)
@@ -282,7 +284,10 @@ public class EventService {
                                     Comparator.comparing(Event::getEventDate))
                     .toList();
 
-            eventFullDtoList.forEach(e -> setEventViews(e, request));
+            for (Event e : eventFullDtoList) {
+                e.setViews(e.getViews() + 1);
+                eventRepository.save(e);
+            }
 
             return eventFullDtoList.stream()
                     .map(EventMapper::toEventFullDto)
@@ -294,7 +299,8 @@ public class EventService {
         if (eventRepository.existsById(id)) {
             Event event = eventRepository.findById(id).get();
             if (event.getState().equals(State.PUBLISHED)) {
-                setEventViews(event, request);
+                event.setViews(event.getViews() + 1);
+                eventRepository.save(event);
                 return EventMapper.toEventFullDto(event);
             } else {
                 throw new NotFoundException("Event not found");
@@ -395,16 +401,4 @@ public class EventService {
         eventRepository.save(event);
         return EventMapper.toEventFullDto(event);
     }
-
-    private void setEventViews(Event event, HttpServletRequest request) {
-        String eventUri = request.getRequestURI();
-        LocalDateTime start = LocalDateTime.of(2020, 1, 1, 0, 0);
-        LocalDateTime end = LocalDateTime.now();
-
-        List<ViewStatsDto> stats = statClient.getStats(start, end, List.of(eventUri), true);
-        event.setViews(stats.get(0).getHits());
-        event.setViews(event.getViews() + 1);
-
-    }
-
 }
