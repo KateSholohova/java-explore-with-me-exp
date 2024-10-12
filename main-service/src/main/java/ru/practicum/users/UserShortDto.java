@@ -1,8 +1,10 @@
 package ru.practicum.users;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class UserShortDto {
     int id;
     String name;

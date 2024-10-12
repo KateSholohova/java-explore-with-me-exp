@@ -1,12 +1,14 @@
 package ru.practicum.events;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import ru.practicum.categories.CategoryDto;
 import ru.practicum.users.UserShortDto;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 public class EventShortDto {
     private int id;
     private String annotation;

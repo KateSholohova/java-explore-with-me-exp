@@ -3,6 +3,7 @@ package ru.practicum.requests;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.events.Event;
 import ru.practicum.events.EventRepository;
 import ru.practicum.events.State;
@@ -22,6 +23,7 @@ public class RequestService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
 
+    @Transactional
     public RequestDto create(int userId, int eventId) {
         if (eventRepository.existsById(eventId) && userRepository.existsById(userId)) {
             Event event = eventRepository.findById(eventId).get();
@@ -60,6 +62,7 @@ public class RequestService {
         }
     }
 
+    @Transactional
     public List<RequestDto> findAllByRequesterId(int userId) {
         if (userRepository.existsById(userId)) {
             return requestRepository.findAllByRequesterId(userId).stream()
@@ -71,6 +74,7 @@ public class RequestService {
         }
     }
 
+    @Transactional
     public RequestDto cancel(int userId, int requestId) {
         if (requestRepository.existsById(requestId) && userRepository.existsById(userId)) {
             Request request = requestRepository.findById(requestId).get();

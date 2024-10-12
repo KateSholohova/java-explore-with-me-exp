@@ -2,10 +2,12 @@ package ru.practicum.events;
 
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import ru.practicum.events.location.Location;
 
-@Data
+@Getter
+@Setter
 public class UpdateEventAdminRequest {
     @Size(min = 20, max = 2000)
     private String annotation;

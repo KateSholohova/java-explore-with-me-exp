@@ -6,13 +6,16 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import ru.practicum.events.Event;
 
 import java.util.List;
 
 @Entity
 @Table(name = "compilations")
-@Data
+@Getter
+@Setter
 public class Compilation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

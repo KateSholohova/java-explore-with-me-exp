@@ -1,8 +1,10 @@
 package ru.practicum.requests;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class RequestDto {
     private int id;
     private String created;

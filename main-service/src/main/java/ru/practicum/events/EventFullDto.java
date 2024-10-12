@@ -1,11 +1,13 @@
 package ru.practicum.events;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import ru.practicum.categories.CategoryDto;
 import ru.practicum.events.location.Location;
 import ru.practicum.users.UserShortDto;
 
-@Data
+@Getter
+@Setter
 public class EventFullDto {
     private int id;
     private String annotation;

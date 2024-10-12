@@ -1,4 +1,4 @@
-package ru.practicum.events;
+package ru.practicum.config;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;

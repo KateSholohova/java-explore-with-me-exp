@@ -3,6 +3,7 @@ package ru.practicum.compilations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.events.EventRepository;
 import ru.practicum.exceptions.NotFoundException;
 
@@ -16,6 +17,7 @@ public class CompilationService {
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
 
+    @Transactional
     public CompilationDto create(NewCompilationDto newCompilationDto) {
         if (newCompilationDto.getPinned() == null) {
             newCompilationDto.setPinned(false);
@@ -26,6 +28,7 @@ public class CompilationService {
         return CompilationMapper.toCompilationDto(compilation);
     }
 
+    @Transactional
     public void delete(int compId) {
         if (compilationRepository.existsById(compId)) {
             compilationRepository.deleteById(compId);
@@ -34,10 +37,10 @@ public class CompilationService {
         }
     }
 
+    @Transactional
     public CompilationDto update(int compId, UpdateCompilationRequest updateCompilationRequest) {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundException("Compilation not found"));
-        //Compilation newCompilation = CompilationMapper.toCompilation(newCompilationDto);
         if (updateCompilationRequest.getPinned() != null) {
             compilation.setPinned(updateCompilationRequest.getPinned());
         }
@@ -51,6 +54,7 @@ public class CompilationService {
         return CompilationMapper.toCompilationDto(compilation);
     }
 
+    @Transactional
     public List<CompilationDto> getAll(Boolean pinned, int from, int size) {
         if (pinned != null) {
             return compilationRepository.findAllByPinned(pinned).stream()
@@ -66,6 +70,7 @@ public class CompilationService {
                 .toList();
     }
 
+    @Transactional
     public CompilationDto findById(int compId) {
         if (compilationRepository.existsById(compId)) {
             return CompilationMapper.toCompilationDto(compilationRepository.findById(compId).get());

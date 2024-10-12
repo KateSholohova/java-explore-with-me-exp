@@ -2,7 +2,8 @@ package ru.practicum.events;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import ru.practicum.categories.Category;
 import ru.practicum.events.location.Location;
 import ru.practicum.users.User;
@@ -11,7 +12,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "events")
-@Data
+@Getter
+@Setter
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

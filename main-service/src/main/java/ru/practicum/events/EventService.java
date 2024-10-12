@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatClient;
 import ru.practicum.categories.Category;
 import ru.practicum.categories.CategoryRepository;
@@ -38,6 +39,7 @@ public class EventService {
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    @Transactional
     public EventFullDto create(NewEventDto newEventDto, int userId) {
         if (LocalDateTime.parse(newEventDto.getEventDate(), formatter).isBefore(LocalDateTime.now()) ||
                 LocalDateTime.parse(newEventDto.getEventDate(), formatter).equals(LocalDateTime.now())) {
@@ -68,37 +70,32 @@ public class EventService {
         return EventMapper.toEventFullDto(event);
     }
 
+    @Transactional
     public List<EventFullDto> findAllByInitiatorId(int from, int size, int userId) {
-        if (userRepository.existsById(userId)) {
-            return eventRepository.findAllByInitiatorId(userId).stream()
-                    .map(EventMapper::toEventFullDto)
-                    .skip(from)
-                    .limit(size)
-                    .collect(Collectors.toList());
-
-        } else {
+        if (!userRepository.existsById(userId)) {
             throw new NotFoundException("User not found");
         }
+        return eventRepository.findAllByInitiatorId(userId).stream()
+                .map(EventMapper::toEventFullDto)
+                .skip(from)
+                .limit(size)
+                .collect(Collectors.toList());
     }
 
+    @Transactional
     public EventFullDto findEventByInitiatorId(int userId, int eventId) {
-        if (userRepository.existsById(userId)) {
-            if (eventRepository.existsById(eventId)) {
-                Event event = eventRepository.findById(eventId).get();
-                if (event.getInitiator().getId() == userId) {
-                    return EventMapper.toEventFullDto(event);
-                } else {
-                    throw new NotFoundException("Event not found");
-                }
-
-            } else {
-                throw new NotFoundException("Event not found");
-            }
-        } else {
+        if (!userRepository.existsById(userId)) {
             throw new NotFoundException("User not found");
         }
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event not found"));
+        if (event.getInitiator() == null || event.getInitiator().getId() != userId) {
+            throw new NotFoundException("Event not found");
+        }
+        return EventMapper.toEventFullDto(event);
     }
 
+    @Transactional
     public EventFullDto updateByInitiator(int userId, int eventId, UpdateEventUserRequest updateEventUserRequest) {
         if (userRepository.existsById(userId)) {
             if (eventRepository.existsByIdAndInitiatorId(eventId, userId)) {
@@ -129,6 +126,7 @@ public class EventService {
         }
     }
 
+    @Transactional
     public EventFullDto updateByAdmin(int eventId, UpdateEventAdminRequest updateEventAdminRequest) {
 
         if (eventRepository.existsById(eventId)) {
@@ -156,7 +154,7 @@ public class EventService {
         }
     }
 
-
+    @Transactional
     public List<EventFullDto> searchAdmin(List<Integer> users, List<String> states, List<Integer> categories,
                                           String rangeEnd, String rangeStart, int from, int size) {
         LocalDateTime startDateTime = rangeStart != null ? LocalDateTime.parse(rangeStart, formatter) : null;
@@ -221,6 +219,7 @@ public class EventService {
         }
     }
 
+    @Transactional
     public List<EventFullDto> searchPublic(String text, List<Integer> categories, Boolean paid, String rangeStart,
                                            String rangeEnd, Boolean onlyAvailable, String sort, int from, int size, HttpServletRequest request) {
         LocalDateTime startDateTime = rangeStart != null ? LocalDateTime.parse(rangeStart, formatter) : null;
@@ -295,6 +294,7 @@ public class EventService {
         }
     }
 
+    @Transactional
     public EventFullDto findByIdPublic(int id, HttpServletRequest request) {
         if (eventRepository.existsById(id)) {
             Event event = eventRepository.findById(id).get();
@@ -311,12 +311,14 @@ public class EventService {
 
     }
 
+    @Transactional
     public List<RequestDto> findRequestsByInitiatorId(int userId, int eventId) {
         return requestRepository.findAllByEventId(eventId).stream()
                 .map(RequestMapper::toRequestDto)
                 .toList();
     }
 
+    @Transactional
     public EventRequestStatusUpdateResult updateRequestStatus(int userId, int eventId,
                                                               EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
 

@@ -1,11 +1,13 @@
 package ru.practicum.events;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import ru.practicum.requests.RequestDto;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 public class EventRequestStatusUpdateResult {
     private List<RequestDto> confirmedRequests;
     private List<RequestDto> rejectedRequests;

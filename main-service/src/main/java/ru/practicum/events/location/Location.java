@@ -2,11 +2,13 @@ package ru.practicum.events.location;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "locations")
-@Data
+@Getter
+@Setter
 public class Location {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
