@@ -1,6 +1,5 @@
 package ru.practicum.compilations;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import ru.practicum.events.EventShortDto;
