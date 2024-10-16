@@ -1,13 +1,13 @@
-package ru.practicum.categories;
+package ru.practicum.users;
+
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class CategoryDto {
+public class UserDto {
     private int id;
     private String name;
+    private String email;
 }
-
-

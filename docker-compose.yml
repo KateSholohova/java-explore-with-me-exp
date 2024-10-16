@@ -28,13 +28,35 @@ services:
       interval: 5s
       retries: 10
 
-  ewm-service:
-      build: main-service
-      image: evm-service
-      container_name: evm-service
-      ports:
-         - "8080:8080"
 
-  ewm-db:
-     image: postgres:16.1
+
+  main-service:
+    build: main-service
+    image: main-service
+    container_name: main-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - main-db
+      - stats-server
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://main-db:5432/main
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=1
+      - STAT_SERVER_URL=http://stats-server:9090
+
+  main-db:
+    image: postgres:16.1
+    container_name: postgres-main
+    ports:
+      - "5632:5432"
+    environment:
+      - POSTGRES_PASSWORD=1
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=main
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
 

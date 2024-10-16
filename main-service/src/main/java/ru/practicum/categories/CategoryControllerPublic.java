@@ -1,10 +1,9 @@
 package ru.practicum.categories;
 
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -15,12 +14,15 @@ public class CategoryControllerPublic {
     private final CategoryService categoryService;
 
     @GetMapping
-    public List<Category> findAll() {
-        return categoryService.findAll();
+    public List<CategoryDto> findAll(@RequestParam(defaultValue = "0")
+                                     @PositiveOrZero Integer from,
+                                     @RequestParam(defaultValue = "10")
+                                     @Positive Integer size) {
+        return categoryService.findAll(from, size);
     }
 
     @GetMapping("/{categoryId}")
-    public  Category findById(@PathVariable("categoryId") int categoryId) {
+    public CategoryDto findById(@PathVariable("categoryId") int categoryId) {
         return categoryService.findById(categoryId);
     }
 }

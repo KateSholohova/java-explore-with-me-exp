@@ -10,10 +10,13 @@ import java.time.LocalDateTime;
 
 @RestControllerAdvice
 public class ErrorHandler {
+
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleNotValidationData(Exception e) {
-        return new ErrorResponse("INTERNAL_SERVER_ERROR", "Unexpected error",
+        return new ErrorResponse("BAD_REQUEST", e.getMessage(),
                 "An unexpected error has occurred", LocalDateTime.now());
     }
+
+
 }
