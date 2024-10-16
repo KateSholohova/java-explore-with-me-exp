@@ -41,9 +41,4 @@ public class CommentControllerPrivate {
         return commentService.getAllUserComments(userId);
     }
 
-    @GetMapping("/events")
-    public List<CommentDto> getCommentsForUserEvents(@PathVariable int userId) {
-        return commentService.getCommentsForUserEvents(userId);
-    }
-
 }

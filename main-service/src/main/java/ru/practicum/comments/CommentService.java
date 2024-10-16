@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.events.Event;
 import ru.practicum.events.EventRepository;
+import ru.practicum.events.State;
 import ru.practicum.exceptions.ConflictException;
 import ru.practicum.exceptions.NotFoundException;
 import ru.practicum.exceptions.ValidationException;
 import ru.practicum.requests.RequestRepository;
-import ru.practicum.requests.Status;
 import ru.practicum.users.User;
 import ru.practicum.users.UserRepository;
 
@@ -33,21 +33,19 @@ public class CommentService {
                 .orElseThrow(() -> new NotFoundException("Event not found"));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
-        if (event.getPublishedOn() != null) {
-            if (requestRepository.findByRequesterIdAndEventId(userId, eventId).getStatus().equals(Status.CONFIRMED)) {
-                if (commentRepository.existsByCommentatorIdAndEventId(userId, eventId)) {
-                    throw new ConflictException("Comment already exists");
-                }
-                Comment comment = CommentMapper.toComment(newCommentDto);
-                comment.setCommentator(user);
-                comment.setEvent(event);
-                comment.setCreated(LocalDateTime.now());
-                commentRepository.save(comment);
-                return CommentMapper.toCommentDto(comment);
+        if (event.getState().equals(State.PUBLISHED)) {
+            if (commentRepository.existsByCommentatorIdAndEventId(userId, eventId)) {
+                throw new ConflictException("Comment already exists");
             }
-            throw new ConflictException("Request is not confirmed yet");
+            Comment comment = CommentMapper.toComment(newCommentDto);
+            comment.setCommentator(user);
+            comment.setEvent(event);
+            comment.setCreated(LocalDateTime.now());
+            commentRepository.save(comment);
+            return CommentMapper.toCommentDto(comment);
+
         }
-        throw new ConflictException("Request is not exist");
+        throw new ConflictException("Request is not published");
     }
 
     @Transactional
@@ -68,9 +66,9 @@ public class CommentService {
             } else {
                 throw new ValidationException("It is not your comment");
             }
-
+        } else {
+            throw new NotFoundException("Comment not found");
         }
-        throw new NotFoundException("Comment not found");
     }
 
     @Transactional
@@ -78,14 +76,6 @@ public class CommentService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
         return commentRepository.findAllByCommentatorId(userId).stream()
-                .map(CommentMapper::toCommentDto)
-                .toList();
-    }
-
-    @Transactional
-    public List<CommentDto> getCommentsForUserEvents(int userId) {
-        List<Integer> eventIds = eventRepository.findAllIdsByInitiatorId(userId);
-        return commentRepository.findAllByEventIdIn(eventIds).stream()
                 .map(CommentMapper::toCommentDto)
                 .toList();
     }
@@ -112,8 +102,10 @@ public class CommentService {
     public void deleteByAdmin(int commentId) {
         if (commentRepository.existsById(commentId)) {
             commentRepository.deleteById(commentId);
+        } else {
+            throw new NotFoundException("Comment not found");
         }
-        throw new NotFoundException("Comment not found");
+
     }
 }
 
