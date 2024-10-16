@@ -33,7 +33,7 @@ public class CommentService {
                 .orElseThrow(() -> new NotFoundException("Event not found"));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
-        if (requestRepository.findByRequesterIdAndEventId(userId, eventId) != null) {
+        if (event.getPublishedOn() != null) {
             if (requestRepository.findByRequesterIdAndEventId(userId, eventId).getStatus().equals(Status.CONFIRMED)) {
                 if (commentRepository.existsByCommentatorIdAndEventId(userId, eventId)) {
                     throw new ConflictException("Comment already exists");
