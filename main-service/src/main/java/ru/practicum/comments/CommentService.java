@@ -33,9 +33,6 @@ public class CommentService {
                 .orElseThrow(() -> new NotFoundException("Event not found"));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
-        if (event.getEventDate().isAfter(LocalDateTime.now())) {
-            throw new ValidationException("Event date is after now");
-        }
         if (requestRepository.findByRequesterIdAndEventId(userId, eventId) != null) {
             if (requestRepository.findByRequesterIdAndEventId(userId, eventId).getStatus().equals(Status.CONFIRMED)) {
                 if (commentRepository.existsByCommentatorIdAndEventId(userId, eventId)) {
