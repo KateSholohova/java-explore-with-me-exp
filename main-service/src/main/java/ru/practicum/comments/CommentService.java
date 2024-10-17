@@ -60,15 +60,14 @@ public class CommentService {
 
     @Transactional
     public void deleteByCommentator(int commentId, int userId) {
-        if (commentRepository.existsById(commentId)) {
-            if (commentRepository.findById(commentId).get().getCommentator().getId() == userId) {
-                commentRepository.deleteById(commentId);
-            } else {
-                throw new ValidationException("It is not your comment");
-            }
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Comment not found"));
+        if (comment.getCommentator().getId() == userId) {
+            commentRepository.deleteById(commentId);
         } else {
-            throw new NotFoundException("Comment not found");
+            throw new ValidationException("It is not your comment");
         }
+
     }
 
     @Transactional

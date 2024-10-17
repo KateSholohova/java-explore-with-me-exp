@@ -1,4 +1,4 @@
-package ru.practicum.ViewStats;
+package ru.practicum.view;
 
 import org.mapstruct.Mapper;
 import ru.practicum.ViewStatsDto;

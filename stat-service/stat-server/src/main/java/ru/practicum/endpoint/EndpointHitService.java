@@ -1,4 +1,4 @@
-package ru.practicum.EndpointHit;
+package ru.practicum.endpoint;
 
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import ru.practicum.Constants;
 import ru.practicum.EndpointHitDto;
-import ru.practicum.ViewStats.ViewStats;
+import ru.practicum.view.ViewStats;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;

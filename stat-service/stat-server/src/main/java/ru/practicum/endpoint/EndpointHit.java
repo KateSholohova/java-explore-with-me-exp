@@ -1,4 +1,4 @@
-package ru.practicum.EndpointHit;
+package ru.practicum.endpoint;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
