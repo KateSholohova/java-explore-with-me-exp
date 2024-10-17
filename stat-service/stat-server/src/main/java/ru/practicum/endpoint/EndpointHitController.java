@@ -1,13 +1,13 @@
-package ru.practicum.EndpointHit;
+package ru.practicum.endpoint;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.EndpointHitDto;
-import ru.practicum.ViewStats.ViewStats;
-import ru.practicum.ViewStats.ViewStatsMapper;
 import ru.practicum.ViewStatsDto;
+import ru.practicum.view.ViewStats;
+import ru.practicum.view.ViewStatsMapper;
 
 import java.util.List;
 

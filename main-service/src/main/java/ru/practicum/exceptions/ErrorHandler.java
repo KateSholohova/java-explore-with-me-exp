@@ -40,7 +40,7 @@ public class ErrorHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleException(final Exception e) {
-        log.error("Необработанное исключение: ", e);
+        log.error("Необработанное исключение: {}", e.getMessage());
         return new ErrorResponse("Исключения", e.getMessage());
     }
 }

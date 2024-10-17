@@ -57,7 +57,7 @@ public class EventService {
         event.setCategory(category);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
-        log.info("user: " + user);
+        log.info("user: {}", user);
         event.setInitiator(userRepository.findById(userId).get());
         Location location = locationRepository.save(newEventDto.getLocation());
         event.setLocation(location);
@@ -167,7 +167,7 @@ public class EventService {
         if (users != null && categories != null) {
             return eventRepository.findAllByInitiatorIdInAndCategoryIdIn(users, categories)
                     .stream()
-                    .filter(e -> ((states != null) ? states.contains(e.getState().toString()) : true)
+                    .filter(e -> (states == null || states.contains(e.getState().toString()))
                             &&
                             ((startDateTime != null && endDateTime != null)
                                     ? e.getEventDate().isAfter(startDateTime) && e.getEventDate().isBefore(endDateTime)
@@ -180,7 +180,7 @@ public class EventService {
         } else if (users == null && categories != null) {
             return eventRepository.findAllByCategoryIdIn(categories)
                     .stream()
-                    .filter(e -> ((states != null) ? states.contains(e.getState().toString()) : true)
+                    .filter(e -> (states == null || states.contains(e.getState().toString()))
                             &&
                             ((startDateTime != null && endDateTime != null)
                                     ? e.getEventDate().isAfter(startDateTime) && e.getEventDate().isBefore(endDateTime)
@@ -193,7 +193,7 @@ public class EventService {
         } else if (users != null && categories == null) {
             return eventRepository.findAllByInitiatorIdIn(users)
                     .stream()
-                    .filter(e -> ((states != null) ? states.contains(e.getState().toString()) : true)
+                    .filter(e -> (states == null || states.contains(e.getState().toString()))
                             &&
                             ((startDateTime != null && endDateTime != null)
                                     ? e.getEventDate().isAfter(startDateTime) && e.getEventDate().isBefore(endDateTime)
@@ -206,7 +206,7 @@ public class EventService {
         } else {
             return eventRepository.findAll()
                     .stream()
-                    .filter(e -> ((states != null) ? states.contains(e.getState().toString()) : true)
+                    .filter(e -> (states == null || states.contains(e.getState().toString()))
                             &&
                             ((startDateTime != null && endDateTime != null)
                                     ? e.getEventDate().isAfter(startDateTime) && e.getEventDate().isBefore(endDateTime)

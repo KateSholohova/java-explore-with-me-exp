@@ -1,16 +1,16 @@
-package ru.practicum.EndpointHit;
+package ru.practicum.endpoint;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import ru.practicum.ViewStats.ViewStats;
+import ru.practicum.view.ViewStats;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EndpointHitRepository extends JpaRepository<EndpointHit, Long> {
 
-    @Query("select new ru.practicum.ViewStats.ViewStats(eh.app, eh.uri, count(distinct eh.ip)) " +
+    @Query("select new ru.practicum.view.ViewStats(eh.app, eh.uri, count(distinct eh.ip)) " +
             "from EndpointHit as eh " +
             "where eh.timestamp > :start and eh.timestamp < :end and eh.uri in (:uri) " +
             "group by eh.app, eh.uri " +
@@ -19,7 +19,7 @@ public interface EndpointHitRepository extends JpaRepository<EndpointHit, Long> 
                                                                 @Param("end") LocalDateTime end,
                                                                 @Param("uri") List<String> uri);
 
-    @Query("select new ru.practicum.ViewStats.ViewStats(eh.app, eh.uri, count(eh.ip)) " +
+    @Query("select new ru.practicum.view.ViewStats(eh.app, eh.uri, count(eh.ip)) " +
             "from EndpointHit as eh " +
             "where eh.timestamp > :start and eh.timestamp < :end and eh.uri in (:uri) " +
             "group by eh.app, eh.uri " +

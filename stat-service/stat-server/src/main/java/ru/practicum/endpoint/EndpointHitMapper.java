@@ -1,4 +1,4 @@
-package ru.practicum.EndpointHit;
+package ru.practicum.endpoint;
 
 import org.mapstruct.Mapper;
 import ru.practicum.EndpointHitDto;
